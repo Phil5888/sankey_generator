@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Main.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/manual_main.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/.venv/bin/python"
+        },
+        {
+            "name": "Live Preview: Sankey Generator",
+            "type": "chrome",
+            "request": "launch",
+            // "url": "http://localhost:8080",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Run NiceGUI"
+        }
+    ]
+}

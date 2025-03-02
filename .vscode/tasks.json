@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run NiceGUI",
+            "type": "shell",
+            "command": "poetry",
+            "args": ["run", "python", "${workspaceFolder}/main.py"],
+            "problemMatcher": [],
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        }
+    ]
+}
