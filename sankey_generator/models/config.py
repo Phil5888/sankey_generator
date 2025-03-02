@@ -25,3 +25,7 @@ class Config:
         self.analysis_month_column_name = config_data['analysis_month_column_name']
         self.amount_out_name = config_data['amount_out_name']
         self.other_income_name = config_data['other_income_name']
+        self.last_used_month = config_data['last_used_month']
+        self.last_used_year = config_data['last_used_year']
+        self.last_used_issue_level = config_data['last_used_issue_level']
+        self.dark_mode = config_data['dark_mode']

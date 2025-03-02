@@ -100,6 +100,8 @@ ui.colors(
 # TODO: Set colors in sankey
 
 dark = ui.dark_mode()
+if config.dark_mode:
+    dark.enable()
 ui.label('Switch mode:')
 ui.button('Dark', on_click=dark.enable)
 ui.button('Light', on_click=dark.disable)
@@ -108,9 +110,9 @@ with ui.dialog() as dialog, ui.card():
     result = ui.markdown()
 
 with ui.row().classes('items-center'):
-    year = ui.input('Year', value='2024')
-    month = ui.input('Month', value='1')
-    issue_level = ui.input('Issue level', value='1')
+    year = ui.input('Year', value=config.last_used_year)
+    month = ui.input('Month', value=config.last_used_month)
+    issue_level = ui.input('Issue level', value=config.last_used_issue_level)
 
     def on_submit(year: int, month: int, issue_level: int):
         """Generate the Sankey diagram for the given year, month and issue level."""
@@ -134,5 +136,6 @@ with ui.row().classes('items-center'):
 with ui.row().classes('items-center'):
     diagram_container = ui.html().classes('mt-4')
 
+
 # NOTE: On Windows reload must be disabled to make asyncio.create_subprocess_exec work (see https://github.com/zauberzeug/nicegui/issues/486)
-ui.run(reload=platform.system() != 'Windows')
+ui.run(reload=platform.system() != 'Windows', dark=True)

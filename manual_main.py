@@ -40,21 +40,17 @@ def main():
         DataFrameFilter(flt['column'], flt['values']) for flt in config.issues_data_frame_filters
     ]
 
-    year = 2024
-    month = 3
-    issue_level = 2
-
     income_node: SankeyIncomeNode = fcp.parse_csv(
         config.input_file,
         income_sources,
-        year,
-        month,
-        issue_level,
+        config.last_used_year,
+        config.last_used_month,
+        config.last_used_issue_level,
         income_data_frame_filters,
         issues_data_frame_filters,
     )
 
-    sankey_html = sp.get_sankey_html(income_node, year, month)
+    sankey_html = sp.get_sankey_html(income_node, config.last_used_year, config.last_used_month)
 
     with open('output_files/sankey.html', 'w') as file:
         file.write(sankey_html)
