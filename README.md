@@ -63,6 +63,14 @@ Die Anwendung verwendet eine Konfigurationsdatei (config.json), um verschiedene 
 1. Die Datei "config.json.example" umbennen in "config.json"
 2. Die Datei "config.json" öffnen und folgende Werte anpassen
 
+### Pfad zur csv datei
+
+Pfad zu deiner CSV datei. Im Beispiel gibt es im projektordner den Ordner "input_files" in dem die Datei "input.csv" liegt.
+
+```
+"input_file": "input_files/input.csv",
+```
+
 ### income_reference_accounts
 
 Eine Liste von IBANs. Hier werden die accounts für die einkommensberechnung hinterlegt. Ersetze zum die beispiel IBANs mit deinem Girokonto (für gehalt usw.) und deinem Depot (für zinsen usw.).
