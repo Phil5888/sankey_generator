@@ -9,14 +9,11 @@ from PyQt6.QtWidgets import (
     QMessageBox,
 )
 
-from sankey_generator.models.csv_filter import CsvFilter
-from sankey_generator.models.data_frame_filter import DataFrameFilter
 from sankey_generator.finanzguru_csv_parser import FinanzguruCsvParser
 from sankey_generator.sankey_plotter import SankeyPlotter
 from sankey_generator.models.config import Config
 import os.path
 from PyQt6.QtWebEngineWidgets import QWebEngineView
-import plotly.io as pio
 
 from PyQt6.QtCore import QUrl, QDir
 from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEngineDownloadRequest
@@ -89,11 +86,11 @@ class MainWindow(QMainWindow):
         )
 
         # Generate the interactive Sankey diagram as an HTML div
-        fig = self.sp.get_sankey_fig(income_node, year, month)
+        fig_html = self.sp.get_sankey_html(income_node, year, month)
 
         print('Sankey generated')
 
-        return fig
+        return fig_html
 
     def on_submit(self):
         """Handle the submit button click."""
@@ -105,14 +102,12 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, 'Input Error', 'Please fill in all fields.')
             return
 
-        fig = self.generate_sankey(int(year), int(month), int(issue_level))
-        # html = fig.to_html(full_html=True)
-        html = pio.to_html(fig, full_html=True)
+        fig_html = self.generate_sankey(int(year), int(month), int(issue_level))
 
         # Save the HTML to a temporary file
         temp_file = 'temp_plot.html'
         with open(temp_file, 'w', encoding='utf-8') as f:
-            f.write(html)
+            f.write(fig_html)
 
         # Load the file in WebView
         self.diagram_browser.setUrl(QUrl.fromLocalFile(os.path.abspath(temp_file)))
