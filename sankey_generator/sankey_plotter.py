@@ -15,7 +15,7 @@ class SankeyPlotter:
         """Initialize the SankeyPlotter."""
         self.amount_out_name = amount_out_name
 
-    def add_nodes_to_sankey(
+    def _add_nodes_to_sankey(
         self,
         node: SankeyNode,
         labels: list[str],
@@ -24,7 +24,7 @@ class SankeyPlotter:
         values: list[float],
         colors: list[int],
         parent_index=None,
-    ):
+    ) -> None:
         """Add nodes to the sankey diagram."""
         if node.label not in labels:
             labels.append(node.label)
@@ -37,9 +37,9 @@ class SankeyPlotter:
             colors.append('#%06x' % random.randint(0, 0xFFFFFF))
 
         for issueNode in node.childNodes:
-            self.add_nodes_to_sankey(issueNode, labels, source, target, values, colors, node_index)
+            self._add_nodes_to_sankey(issueNode, labels, source, target, values, colors, node_index)
 
-    def add_income_node_to_sankey(
+    def _add_income_node_to_sankey(
         self,
         income_node: SankeyIncomeNode,
         labels: list[str],
@@ -48,7 +48,7 @@ class SankeyPlotter:
         values: list[float],
         colors: list[int],
         parent_index=None,
-    ):
+    ) -> None:
         """Add income nodes to the sankey diagram."""
         for current_income in income_node.incomeNodes:
             labels.append(current_income.label)
@@ -72,14 +72,9 @@ class SankeyPlotter:
             colors.append('#%06x' % random.randint(0, 0xFFFFFF))
 
         for issueNode in income_node.issueNodes:
-            self.add_nodes_to_sankey(issueNode, labels, source, target, values, colors, node_index)
+            self._add_nodes_to_sankey(issueNode, labels, source, target, values, colors, node_index)
 
-    def get_sankey_html(self, income_node: SankeyIncomeNode, year: int, month: int) -> str:
-        """Plot the sankey diagram and return it as an HTML div."""
-        fig = self.get_sankey_fig(income_node, year, month)
-        return pio.to_html(fig, full_html=False)
-
-    def get_sankey_fig(self, income_node: SankeyIncomeNode, year: int, month: int) -> go.Figure:
+    def _get_sankey_fig(self, income_node: SankeyIncomeNode, year: int, month: int) -> go.Figure:
         """Get the sankey diagram Figure."""
         labels: list[str] = []
         source: list[int] = []
@@ -87,7 +82,7 @@ class SankeyPlotter:
         colors: list[int] = []
         target: list[int] = []
 
-        self.add_income_node_to_sankey(income_node, labels, source, target, values, colors)
+        self._add_income_node_to_sankey(income_node, labels, source, target, values, colors)
 
         fig = go.Figure(
             data=[
@@ -122,3 +117,8 @@ class SankeyPlotter:
         )
 
         return fig
+
+    def get_sankey_html(self, income_node: SankeyIncomeNode, year: int, month: int) -> str:
+        """Plot the sankey diagram and return it as an HTML div."""
+        fig = self._get_sankey_fig(income_node, year, month)
+        return pio.to_html(fig, full_html=False)
