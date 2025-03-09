@@ -36,34 +36,19 @@ class MainWindow(QMainWindow):
 
         self.layout: QVBoxLayout = QVBoxLayout()
 
-        self.year_input = QLineEdit(self)
-        self.year_input.setPlaceholderText('Year')
-        self.year_input.setText(str(config.last_used_year))
-
+        self.year_input = self.create_input_field('Year', config.last_used_year)
         self.layout.addWidget(self.year_input)
 
-        self.month_input = QLineEdit(self)
-        self.month_input.setPlaceholderText('Month')
-        self.month_input.setText(str(config.last_used_month))
+        self.month_input = self.create_input_field('Month', config.last_used_month)
         self.layout.addWidget(self.month_input)
 
-        self.issue_level_input = QLineEdit(self)
-        self.issue_level_input.setPlaceholderText('Issue Level')
-        self.issue_level_input.setText(str(config.last_used_issue_level))
-        self.layout.addWidget(
-            self.issue_level_input,
-        )
+        self.issue_level_input = self.create_input_field('Issue Level', config.last_used_issue_level)
+        self.layout.addWidget(self.issue_level_input)
 
-        self.generate_button = QPushButton('Start Sankey generation', self)
-        self.generate_button.clicked.connect(self.on_submit)
+        self.generate_button = self.create_button('Start Sankey generation', self.on_submit)
         self.layout.addWidget(self.generate_button)
 
-        self.diagram_browser = QWebEngineView()
-
-        profile = QWebEngineProfile.defaultProfile()
-
-        # Handle download requests
-        profile.downloadRequested.connect(self.on_download_requested)
+        self.diagram_browser = self.create_browser()
         self.layout.addWidget(self.diagram_browser)
 
         self.central_widget.setLayout(self.layout)
@@ -75,6 +60,30 @@ class MainWindow(QMainWindow):
         download_item.setDownloadDirectory(download_path)
         download_item.setDownloadFileName('sankey.png')
         download_item.accept()  # Accept the download request, otherwise the download will not start
+
+    def create_input_field(self, placeholder_text, default_value):
+        """Create an input field with the given placeholder text and default value."""
+        input_field = QLineEdit(self)
+        input_field.setPlaceholderText(placeholder_text)
+        input_field.setText(str(default_value))
+
+        return input_field
+
+    def create_browser(self):
+        """Create a browser to display the Sankey diagram."""
+        browser = QWebEngineView()
+        profile = QWebEngineProfile.defaultProfile()
+        # Handle download requests
+        profile.downloadRequested.connect(self.on_download_requested)
+
+        return browser
+
+    def create_button(self, text, on_click):
+        """Create a button with the given text and on_click function."""
+        button = QPushButton(text, self)
+        button.clicked.connect(on_click)
+
+        return button
 
     def generate_sankey(self, year, month, issue_level):
         """Generate the Sankey diagram for the given year, month and issue level."""
