@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QLabel,
+    QHBoxLayout,
 )
 
 from sankey_generator.finanzguru_csv_parser import FinanzguruCsvParser
@@ -18,8 +19,9 @@ from sankey_generator.models.theme import Theme
 import os.path
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 
-from PyQt6.QtCore import QUrl, QDir
+from PyQt6.QtCore import QUrl, QDir, Qt
 from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEngineDownloadRequest
+from ui.animated_toggle import AnimatedToggle
 
 
 class MainWindow(QMainWindow):
@@ -74,8 +76,13 @@ class MainWindow(QMainWindow):
         self.generate_button = self._create_button('Start Sankey generation', self._on_submit)
         input_layout.addWidget(self.generate_button)
 
-        # Toggle Switch
-        input_layout.addWidget(self._create_dark_mode_switch())
+        # create a horizontal box layout to add the dark mode switch
+        horizontal_layout = QHBoxLayout()
+        horizontal_layout.setSpacing(10)
+        horizontal_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        horizontal_layout.addWidget(QLabel('Dark Mode'))
+        horizontal_layout.addWidget(self._create_dark_mode_switch())
+        input_layout.addLayout(horizontal_layout)
 
         # Add input layout to the main layout with a small stretch
         self.layout.addLayout(input_layout, stretch=1)
@@ -113,7 +120,8 @@ class MainWindow(QMainWindow):
 
     def _create_dark_mode_switch(self) -> QCheckBox:
         """Create a dark mode switch."""
-        toggle_switch = QCheckBox('Dark Mode', self)
+        toggle_switch = AnimatedToggle()
+        toggle_switch.setFixedSize(toggle_switch.sizeHint())
         toggle_switch.setChecked(Theme.dark_mode)
         toggle_switch.stateChanged.connect(self._toggle_theme)
 
