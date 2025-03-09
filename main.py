@@ -32,6 +32,7 @@ from sankey_generator.models.config import Config
 # - Split income to reference accounts (Requires ignoring "Umbuchung" in the CSV)
 # - Add subcategories for fix costs and variable costs
 # - Create a diagramm only for fix costs and variable costs
+# - Add proper validation
 
 
 if __name__ == '__main__':
