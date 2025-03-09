@@ -5,13 +5,16 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QLineEdit,
-    QPushButton,
+    QCheckBox,
     QMessageBox,
+    QPushButton,
+    QLabel,
 )
 
 from sankey_generator.finanzguru_csv_parser import FinanzguruCsvParser
 from sankey_generator.sankey_plotter import SankeyPlotter
 from sankey_generator.models.config import Config
+from sankey_generator.models.theme import Theme
 import os.path
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 
@@ -27,31 +30,99 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.fcp = fcp
         self.sp = sp
+        self.config = config
+        self._init_ui()
 
-        self.setWindowTitle('Sankey Diagram Generator')
+    def _init_ui(self):
+        """Create the user interface."""
+        self.setWindowTitle('Sankey Generator')
         self.setGeometry(100, 100, 800, 600)
+        self._apply_theme()
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
 
+        # Main Layout (Vertical)
         self.layout: QVBoxLayout = QVBoxLayout()
 
-        self.year_input = self._create_input_field('Year', config.last_used_year)
-        self.layout.addWidget(self.year_input)
+        # Section: Title
+        self.layout.addWidget(QLabel('Sankey Diagram Generator', self))
+        self.layout.addWidget(QLabel('Please enter the following information:', self))
 
-        self.month_input = self._create_input_field('Month', config.last_used_month)
-        self.layout.addWidget(self.month_input)
+        # Input Layout (Smaller section)
+        input_layout: QVBoxLayout = QVBoxLayout()
 
-        self.issue_level_input = self._create_input_field('Issue Level', config.last_used_issue_level)
-        self.layout.addWidget(self.issue_level_input)
+        # Year
+        input_layout.addWidget(QLabel('Year'))
+        self.year_input = self._create_input_field('Year', self.config.last_used_year)
+        input_layout.addWidget(self.year_input)
 
+        # Month
+        input_layout.addWidget(QLabel('Month'))
+        self.month_input = self._create_input_field('Month', self.config.last_used_month)
+        input_layout.addWidget(self.month_input)
+
+        # Issue Level
+        input_layout.addWidget(QLabel('Issue Level'))
+        self.issue_level_input = self._create_input_field('Issue Level', self.config.last_used_issue_level)
+        input_layout.addWidget(self.issue_level_input)
+
+        # Generate Button
         self.generate_button = self._create_button('Start Sankey generation', self._on_submit)
-        self.layout.addWidget(self.generate_button)
+        input_layout.addWidget(self.generate_button)
 
+        # Toggle Switch
+        self.toggle_switch = QCheckBox('Dark Mode', self)
+        self.toggle_switch.setChecked(Theme.dark_mode)
+        self.toggle_switch.stateChanged.connect(self._toggle_theme)
+        input_layout.addWidget(self.toggle_switch)
+
+        # Add input layout to the main layout with a small stretch
+        self.layout.addLayout(input_layout, stretch=1)
+
+        # Section: Browser (Should take most of the space)
         self.diagram_browser = self._create_browser()
-        self.layout.addWidget(self.diagram_browser)
+        self.layout.addWidget(self.diagram_browser, stretch=5)  # This will expand more than inputs
 
         self.central_widget.setLayout(self.layout)
+
+    def _apply_theme(self):
+        """Apply the current theme to the main window."""
+        colors = Theme.get_colors()
+        self.setStyleSheet(f"""
+            QMainWindow {{
+                background-color: {colors['background']};
+                color: {colors['primary']};
+            }}
+            QPushButton {{
+                background-color: {colors['secondary']};
+                color: {colors['page']};
+            }}
+            QLabel {{
+                color: {colors['primary']};
+            }}
+            QLineEdit {{
+                background-color: {colors['page']};
+                color: {colors['primary']};
+            }}
+            QCheckBox::indicator {{
+                width: 40px;
+                height: 20px;
+            }}
+            QCheckBox::indicator:checked {{
+                background-color: {colors['primary']};
+                border-radius: 10px;
+            }}
+            QCheckBox::indicator:unchecked {{
+                background-color: {colors['secondary']};
+                border-radius: 10px;
+            }}
+        """)
+
+    def _toggle_theme(self):
+        """Toggle the theme between dark and light mode."""
+        Theme.toggle_mode()
+        self._apply_theme()
 
     def _on_download_requested(self, download_item: QWebEngineDownloadRequest) -> None:
         """Handle download requests."""
