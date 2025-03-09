@@ -13,7 +13,7 @@ QPushButton {{
 }}
 
 QPushButton:hover {{
-    background-color: {accent};
+    background-color: {primary};
 }}
 
 /* Labels */
