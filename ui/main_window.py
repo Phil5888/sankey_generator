@@ -31,6 +31,9 @@ class MainWindow(QMainWindow):
         self.fcp = fcp
         self.sp = sp
         self.config = config
+        self.current_year = None
+        self.current_month = None
+        self.current_issue_level = None
         self._init_ui()
 
     def _init_ui(self):
@@ -118,6 +121,7 @@ class MainWindow(QMainWindow):
                 border-radius: 10px;
             }}
         """)
+        self._create_and_add_sankey()
 
     def _toggle_theme(self):
         """Toggle the theme between dark and light mode."""
@@ -146,6 +150,7 @@ class MainWindow(QMainWindow):
         profile = QWebEngineProfile.defaultProfile()
         # Handle download requests
         profile.downloadRequested.connect(self._on_download_requested)
+        browser.setHtml(self._get_html())
 
         return browser
 
@@ -158,25 +163,38 @@ class MainWindow(QMainWindow):
 
     def _on_submit(self) -> None:
         """Handle the submit button click."""
-        year = self.year_input.text()
-        month = self.month_input.text()
-        issue_level = self.issue_level_input.text()
+        self.current_year = self.year_input.text()
+        self.current_month = self.month_input.text()
+        self.current_issue_level = self.issue_level_input.text()
 
-        if not year or not month or not issue_level:
+        if not self.current_year or not self.current_month or not self.current_issue_level:
             QMessageBox.warning(self, 'Input Error', 'Please fill in all fields.')
             return
+        self._create_and_add_sankey()
 
-        fig_html = self.generate_sankey_html(int(year), int(month), int(issue_level))
+    def _get_html(self, content: str = '') -> str:
+        """Get the HTML content with the given content."""
+        return f'<html><body style="background-color: {Theme.get_colors()["background"]};">{content}</body></html>'
+
+    def _create_and_add_sankey(self):
+        if not self.current_year or not self.current_month or not self.current_issue_level:
+            return
+
+        fig_html = self.generate_sankey_html(
+            int(self.current_year), int(self.current_month), int(self.current_issue_level)
+        )
 
         # Save the HTML to a temporary file
         temp_file = 'temp_plot.html'
         with open(temp_file, 'w', encoding='utf-8') as f:
-            f.write(fig_html)
+            f.write(self._get_html(fig_html))
 
         # Load the file in WebView
         self.diagram_browser.setUrl(QUrl.fromLocalFile(os.path.abspath(temp_file)))
 
-        print(f'Generating Sankey diagram for {year}-{month} with issue level {issue_level}')
+        print(
+            f'Generating Sankey diagram for {self.current_year}-{self.current_month} with issue level {self.current_issue_level}'
+        )
 
     def generate_sankey_html(self, year, month, issue_level) -> str:
         """Generate the Sankey diagram for the given year, month and issue level."""

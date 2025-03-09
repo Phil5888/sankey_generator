@@ -6,6 +6,7 @@ import plotly.io as pio
 
 from sankey_generator.models.sankey_income_node import SankeyIncomeNode
 from sankey_generator.models.sankey_node import SankeyNode
+from sankey_generator.models.theme import Theme
 
 
 class SankeyPlotter:
@@ -108,12 +109,15 @@ class SankeyPlotter:
             ]
         )
 
+        background_color = Theme.get_colors()['background']
+        font_color = Theme.get_colors()['primary']
+
         fig.update_layout(
             hovermode='x',
-            title=dict(text=f'Finanzguru Sankey Diagramm {year}-{month:02d}', font=dict(size=20, color='white')),
-            font=dict(size=10, color='white'),
-            plot_bgcolor='black',
-            paper_bgcolor='black',
+            title=dict(text=f'Finanzguru Sankey Diagramm {year}-{month:02d}', font=dict(size=20, color=font_color)),
+            font=dict(size=10, color=font_color),
+            plot_bgcolor=background_color,
+            paper_bgcolor=background_color,
         )
 
         return fig
