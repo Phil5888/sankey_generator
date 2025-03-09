@@ -22,11 +22,13 @@ from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtCore import QTimer
 import plotly.io as pio
 
-from PyQt6.QtCore import QUrl
-from PyQt6.QtWebEngineCore import QWebEngineSettings
+from PyQt6.QtCore import QUrl, QDir
+from PyQt6.QtWebEngineCore import QWebEngineSettings, QWebEngineProfile, QWebEngineDownloadRequest
 
 
 class MainWindow(QMainWindow):
+    """Main window of the Sankey Diagram Generator."""
+
     # TODO List:
     # - Add a way to select the input file
     # - Add a way to select the output file
@@ -80,6 +82,7 @@ class MainWindow(QMainWindow):
     ]
 
     def __init__(self):
+        """Initialize the main window."""
         super().__init__()
 
         self.setWindowTitle('Sankey Diagram Generator')
@@ -112,15 +115,23 @@ class MainWindow(QMainWindow):
         self.generate_button.clicked.connect(self.on_submit)
         self.layout.addWidget(self.generate_button)
 
-        self.diagram_browser = QWebEngineView()  # = QLabel('Sankey diagram will be displayed here.', self)
-        # Enable JavaScript in WebView
-        self.diagram_browser.settings().setAttribute(QWebEngineSettings.WebAttribute.JavascriptEnabled, True)
-        self.diagram_browser.settings().setAttribute(
-            QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True
-        )
+        self.diagram_browser = QWebEngineView()
+
+        profile = QWebEngineProfile.defaultProfile()
+
+        # Handle download requests
+        profile.downloadRequested.connect(self.on_download_requested)
         self.layout.addWidget(self.diagram_browser)
 
         self.central_widget.setLayout(self.layout)
+
+    def on_download_requested(self, download_item: QWebEngineDownloadRequest):
+        """Handle download requests."""
+        download_path = QDir.currentPath() + '/output_files'
+        QDir().mkpath(download_path)
+        download_item.setDownloadDirectory(download_path)
+        download_item.setDownloadFileName('sankey.png')
+        download_item.accept()  # Accept the download request, otherwise the download will not start
 
     def generate_sankey(self, year, month, issue_level):
         """Generate the Sankey diagram for the given year, month and issue level."""
