@@ -15,6 +15,7 @@ from PyQt6.QtCore import (
 
 from PyQt6.QtWidgets import QCheckBox
 from PyQt6.QtGui import QColor, QBrush, QPaintEvent, QPen, QPainter
+from sankey_generator.models.theme import Theme
 
 
 class AnimatedToggle(QCheckBox):
@@ -23,41 +24,19 @@ class AnimatedToggle(QCheckBox):
     _transparent_pen = QPen(Qt.GlobalColor.transparent)
     _light_grey_pen = QPen(Qt.GlobalColor.lightGray)
 
-    def __init__(
-        self,
-        parent=None,
-        bar_color=Qt.GlobalColor.gray,
-        checked_color='#00B0FF',
-        handle_color=Qt.GlobalColor.white,
-        pulse_unchecked_color='#44999999',
-        pulse_checked_color='#4400B0EE',
-    ):
+    def __init__(self, parent=None):
         """Initialize the AnimatedToggle."""
         super().__init__(parent)
-
-        # Save our properties on the object via self, so we can access them later
-        # in the paintEvent.
-        self._bar_brush = QBrush(bar_color)
-        self._bar_checked_brush = QBrush(QColor(checked_color).lighter())
-
-        self._handle_brush = QBrush(handle_color)
-        self._handle_checked_brush = QBrush(QColor(checked_color))
-
-        self._pulse_unchecked_animation = QBrush(QColor(pulse_unchecked_color))
-        self._pulse_checked_animation = QBrush(QColor(pulse_checked_color))
-
-        # Setup the rest of the widget.
         self.setContentsMargins(8, 0, 8, 0)
         self._handle_position = 0
-
         self._pulse_radius = 0
 
         self.animation = QPropertyAnimation(self, b'handle_position', self)
         self.animation.setEasingCurve(QEasingCurve.Type.InOutCubic)
-        self.animation.setDuration(200)  # time in ms
+        self.animation.setDuration(200)
 
         self.pulse_anim = QPropertyAnimation(self, b'pulse_radius', self)
-        self.pulse_anim.setDuration(350)  # time in ms
+        self.pulse_anim.setDuration(350)
         self.pulse_anim.setStartValue(10)
         self.pulse_anim.setEndValue(20)
 
@@ -66,6 +45,57 @@ class AnimatedToggle(QCheckBox):
         self.animations_group.addAnimation(self.pulse_anim)
 
         self.stateChanged.connect(self.setup_animation)
+
+        # Apply initial colors from the current theme
+        self.update_colors()
+
+    def update_colors(self):
+        """Update colors dynamically from the current theme."""
+        colors = Theme.get_colors()
+        self._bar_brush = QBrush(QColor(colors['secondary']))
+        self._bar_checked_brush = QBrush(QColor(colors['primary']).lighter(110))
+
+        self._handle_brush = QBrush(QColor(colors['page']))
+        self._handle_checked_brush = QBrush(QColor(colors['primary']))
+
+        self._pulse_unchecked_animation = QBrush(QColor(colors['secondary'] + '44'))
+        self._pulse_checked_animation = QBrush(QColor(colors['primary'] + '44'))
+
+        self.update()
+
+    def paintEvent(self, e: QPaintEvent):
+        """Paint the widget."""
+        contRect = self.contentsRect()
+        handleRadius = round(0.24 * contRect.height())
+
+        p = QPainter(self)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        p.setPen(self._transparent_pen)
+        barRect = QRectF(0, 0, contRect.width() - handleRadius, 0.40 * contRect.height())
+        barRect.moveCenter(QPointF(contRect.center()))
+        rounding = barRect.height() / 2
+
+        # Handle animation
+        trailLength = contRect.width() - 2 * handleRadius
+        xPos = contRect.x() + handleRadius + trailLength * self._handle_position
+
+        if self.pulse_anim.state() == QPropertyAnimation.State.Running:
+            p.setBrush(self._pulse_checked_animation if self.isChecked() else self._pulse_unchecked_animation)
+            p.drawEllipse(QPointF(xPos, barRect.center().y()), self._pulse_radius, self._pulse_radius)
+
+        if self.isChecked():
+            p.setBrush(self._bar_checked_brush)
+            p.drawRoundedRect(barRect, rounding, rounding)
+            p.setBrush(self._handle_checked_brush)
+        else:
+            p.setBrush(self._bar_brush)
+            p.drawRoundedRect(barRect, rounding, rounding)
+            p.setPen(self._light_grey_pen)
+            p.setBrush(self._handle_brush)
+
+        p.drawEllipse(QPointF(xPos, barRect.center().y()), handleRadius, handleRadius)
+        p.end()
 
     def sizeHint(self):
         """Return the size hint for the widget."""
@@ -84,43 +114,6 @@ class AnimatedToggle(QCheckBox):
         else:
             self.animation.setEndValue(0)
         self.animations_group.start()
-
-    def paintEvent(self, e: QPaintEvent):
-        """Paint the widget."""
-        contRect = self.contentsRect()
-        handleRadius = round(0.24 * contRect.height())
-
-        p = QPainter(self)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-        p.setPen(self._transparent_pen)
-        barRect = QRectF(0, 0, contRect.width() - handleRadius, 0.40 * contRect.height())
-        barRect.moveCenter(QPointF(contRect.center()))
-        rounding = barRect.height() / 2
-
-        # the handle will move along this line
-        trailLength = contRect.width() - 2 * handleRadius
-
-        xPos = contRect.x() + handleRadius + trailLength * self._handle_position
-
-        if self.pulse_anim.state() == QPropertyAnimation.State.Running:
-            p.setBrush(self._pulse_checked_animation if self.isChecked() else self._pulse_unchecked_animation)
-            p.drawEllipse(QPointF(xPos, barRect.center().y()), self._pulse_radius, self._pulse_radius)
-
-        if self.isChecked():
-            p.setBrush(self._bar_checked_brush)
-            p.drawRoundedRect(barRect, rounding, rounding)
-            p.setBrush(self._handle_checked_brush)
-
-        else:
-            p.setBrush(self._bar_brush)
-            p.drawRoundedRect(barRect, rounding, rounding)
-            p.setPen(self._light_grey_pen)
-            p.setBrush(self._handle_brush)
-
-        p.drawEllipse(QPointF(xPos, barRect.center().y()), handleRadius, handleRadius)
-
-        p.end()
 
     @pyqtProperty(float)
     def handle_position(self):

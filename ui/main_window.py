@@ -81,7 +81,8 @@ class MainWindow(QMainWindow):
         horizontal_layout.setSpacing(10)
         horizontal_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         horizontal_layout.addWidget(QLabel('Dark Mode'))
-        horizontal_layout.addWidget(self._create_dark_mode_switch())
+        self.toggle_switch: AnimatedToggle = self._create_dark_mode_switch()
+        horizontal_layout.addWidget(self.toggle_switch)
         input_layout.addLayout(horizontal_layout)
 
         # Add input layout to the main layout with a small stretch
@@ -109,6 +110,8 @@ class MainWindow(QMainWindow):
         if self.diagram_browser:
             self.diagram_browser.setHtml(self._get_html())
         self._apply_theme()
+        # Update toggle switch colors
+        self.toggle_switch.update_colors()
 
     def _on_download_requested(self, download_item: QWebEngineDownloadRequest) -> None:
         """Handle download requests."""
