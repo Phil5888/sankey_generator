@@ -101,15 +101,24 @@ class FinanzguruCsvParser:
             issue_nodes.append(main_category_node)
         return issue_nodes
 
-    def parse_csv(
+    def configure_parser(
         self,
         file_path: str,
         income_sources: list[CsvFilter],
+        income_data_frame_fitlers: list[DataFrameFilter],
+        issues_data_frame_fitlers: list[DataFrameFilter],
+    ) -> None:
+        """Configure the parser."""
+        self.file_path = file_path
+        self.income_sources = income_sources
+        self.income_data_frame_fitlers = income_data_frame_fitlers
+        self.issues_data_frame_fitlers = issues_data_frame_fitlers
+
+    def parse_csv(
+        self,
         year: int,
         month: int,
         issue_level: int,
-        income_data_frame_fitlers: list[DataFrameFilter],
-        issues_data_frame_fitlers: list[DataFrameFilter],
     ) -> SankeyIncomeNode:
         """Parse the Finanzguru CSV file and return a DataFrame."""
         if issue_level not in [1, 2]:
@@ -124,17 +133,17 @@ class FinanzguruCsvParser:
                 raise ValueError('analysis_month_column_name must be set if month is not None')
 
         df: pd.DataFrame = self.get_relevant_data_from_csv(
-            file_path,
+            self.file_path,
             year,
             month,
         )
 
         income_df: pd.DataFrame = df
-        for data_frame_filter in income_data_frame_fitlers:
+        for data_frame_filter in self.income_data_frame_fitlers:
             income_df = income_df.loc[df[data_frame_filter.column].isin(data_frame_filter.values)]
 
         issues_df: pd.DataFrame = df
-        for data_frame_filter in issues_data_frame_fitlers:
+        for data_frame_filter in self.issues_data_frame_fitlers:
             issues_df = issues_df.loc[df[data_frame_filter.column].isin(data_frame_filter.values)]
 
         issues_main_categories_str: str = issues_df[self.column_anaylsis_main_category].unique()
@@ -149,7 +158,7 @@ class FinanzguruCsvParser:
                 ].unique()
             issues_main_categories.append(IssueCategory(category, issue_sub_categories))
 
-        income_nodes = self.create_income_nodes(income_df, income_sources)
+        income_nodes = self.create_income_nodes(income_df, self.income_sources)
         income_node = SankeyIncomeNode(self.income_node_name, income_nodes)
 
         issue_nodes = self.create_issue_nodes(issues_df, issues_main_categories)
