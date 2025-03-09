@@ -4,8 +4,6 @@
 class Theme:
     """Color theme for the application."""
 
-    dark_mode = True
-
     dark = {
         'primary': '#5898d4',
         'secondary': '#26a69a',
@@ -19,21 +17,25 @@ class Theme:
     }
 
     light = {
-        'primary': '#1976d2',
+        'primary': '#1565c0',  # Slightly darker blue for less brightness
         'secondary': '#26a69a',
-        'accent': '#e91e63',
-        'background': '#ffffff',
-        'page': '#f5f5f5',
+        'accent': '#d81b60',  # Softer pink accent
+        'background': '#f5f5f5',  # Soft light grey to reduce eye strain
+        'page': '#e0e0e0',  # Slightly darker for subtle contrast
         'positive': '#4caf50',
-        'negative': '#f44336',
-        'info': '#2196f3',
-        'warning': '#ff9800',
+        'negative': '#e53935',  # Slightly toned-down red
+        'info': '#1e88e5',  # Less vibrant but clear blue
+        'warning': '#fb8c00',  # Muted orange for a softer warning tone
     }
 
-    @classmethod
-    def get_colors(cls):
-        return cls.dark if cls.dark_mode else cls.light
+    dark_mode = True  # Default theme mode
 
-    @classmethod
-    def toggle_mode(cls):
-        cls.dark_mode = not cls.dark_mode
+    @staticmethod
+    def get_colors():
+        """Get the current theme colors."""
+        return Theme.dark if Theme.dark_mode else Theme.light
+
+    @staticmethod
+    def toggle_mode():
+        """Toggle the theme mode between dark and light."""
+        Theme.dark_mode = not Theme.dark_mode

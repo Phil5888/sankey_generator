@@ -126,6 +126,8 @@ class MainWindow(QMainWindow):
     def _toggle_theme(self):
         """Toggle the theme between dark and light mode."""
         Theme.toggle_mode()
+        if self.diagram_browser:
+            self.diagram_browser.setHtml(self._get_html())
         self._apply_theme()
 
     def _on_download_requested(self, download_item: QWebEngineDownloadRequest) -> None:
