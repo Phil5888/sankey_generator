@@ -75,10 +75,7 @@ class MainWindow(QMainWindow):
         input_layout.addWidget(self.generate_button)
 
         # Toggle Switch
-        self.toggle_switch = QCheckBox('Dark Mode', self)
-        self.toggle_switch.setChecked(Theme.dark_mode)
-        self.toggle_switch.stateChanged.connect(self._toggle_theme)
-        input_layout.addWidget(self.toggle_switch)
+        input_layout.addWidget(self._create_dark_mode_switch())
 
         # Add input layout to the main layout with a small stretch
         self.layout.addLayout(input_layout, stretch=1)
@@ -92,35 +89,11 @@ class MainWindow(QMainWindow):
     def _apply_theme(self):
         """Apply the current theme to the main window."""
         colors = Theme.get_colors()
-        self.setStyleSheet(f"""
-            QMainWindow {{
-                background-color: {colors['background']};
-                color: {colors['primary']};
-            }}
-            QPushButton {{
-                background-color: {colors['secondary']};
-                color: {colors['page']};
-            }}
-            QLabel {{
-                color: {colors['primary']};
-            }}
-            QLineEdit {{
-                background-color: {colors['page']};
-                color: {colors['primary']};
-            }}
-            QCheckBox::indicator {{
-                width: 40px;
-                height: 20px;
-            }}
-            QCheckBox::indicator:checked {{
-                background-color: {colors['primary']};
-                border-radius: 10px;
-            }}
-            QCheckBox::indicator:unchecked {{
-                background-color: {colors['secondary']};
-                border-radius: 10px;
-            }}
-        """)
+
+        with open('theme.qss', 'r') as file:
+            stylesheet = file.read().format(**colors)
+
+        self.setStyleSheet(stylesheet)
         self._create_and_add_sankey()
 
     def _toggle_theme(self):
@@ -137,6 +110,14 @@ class MainWindow(QMainWindow):
         download_item.setDownloadDirectory(download_path)
         download_item.setDownloadFileName('sankey.png')
         download_item.accept()  # Accept the download request, otherwise the download will not start
+
+    def _create_dark_mode_switch(self) -> QCheckBox:
+        """Create a dark mode switch."""
+        toggle_switch = QCheckBox('Dark Mode', self)
+        toggle_switch.setChecked(Theme.dark_mode)
+        toggle_switch.stateChanged.connect(self._toggle_theme)
+
+        return toggle_switch
 
     def _create_input_field(self, placeholder_text, default_value) -> QLineEdit:
         """Create an input field with the given placeholder text and default value."""

@@ -1,0 +1,51 @@
+/* Main Window */
+QMainWindow {{
+    background-color: {background};
+    color: {primary};
+}}
+
+/* Push Button */
+QPushButton {{
+    background-color: {secondary};
+    color: {page};
+    padding: 5px;
+    border-radius: 5px;
+}}
+
+QPushButton:hover {{
+    background-color: {accent};
+}}
+
+/* Labels */
+QLabel {{
+    color: {primary};
+}}
+
+/* Input Fields */
+QLineEdit {{
+    background-color: {page};
+    color: {primary};
+    border: 1px solid {secondary};
+    padding: 4px;
+    border-radius: 4px;
+}}
+
+/* Checkbox Styles */
+QCheckBox {{
+    color: {primary};  /* Apply text color here */
+}}
+
+QCheckBox::indicator {{
+    width: 40px;
+    height: 20px;
+}}
+
+QCheckBox::indicator:checked {{
+    background-color: {primary};
+    border-radius: 10px;
+}}
+
+QCheckBox::indicator:unchecked {{
+    background-color: {secondary};
+    border-radius: 10px;
+}}

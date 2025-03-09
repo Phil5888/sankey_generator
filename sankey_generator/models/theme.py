@@ -17,25 +17,25 @@ class Theme:
     }
 
     light = {
-        'primary': '#1565c0',  # Slightly darker blue for less brightness
+        'primary': '#1565c0',
         'secondary': '#26a69a',
-        'accent': '#d81b60',  # Softer pink accent
-        'background': '#f5f5f5',  # Soft light grey to reduce eye strain
-        'page': '#e0e0e0',  # Slightly darker for subtle contrast
+        'accent': '#d81b60',
+        'background': '#f5f5f5',
+        'page': '#e0e0e0',
         'positive': '#4caf50',
-        'negative': '#e53935',  # Slightly toned-down red
-        'info': '#1e88e5',  # Less vibrant but clear blue
-        'warning': '#fb8c00',  # Muted orange for a softer warning tone
+        'negative': '#e53935',
+        'info': '#1e88e5',
+        'warning': '#fb8c00',
     }
 
-    dark_mode = True  # Default theme mode
+    dark_mode = True
 
     @staticmethod
-    def get_colors():
-        """Get the current theme colors."""
+    def get_colors() -> dict:
+        """Get the colors for the current theme."""
         return Theme.dark if Theme.dark_mode else Theme.light
 
     @staticmethod
-    def toggle_mode():
+    def toggle_mode() -> None:
         """Toggle the theme mode between dark and light."""
         Theme.dark_mode = not Theme.dark_mode
