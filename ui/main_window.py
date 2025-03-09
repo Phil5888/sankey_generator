@@ -25,7 +25,7 @@ from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEngineDownloadRequest
 class MainWindow(QMainWindow):
     """Main window of the Sankey Diagram Generator."""
 
-    def __init__(self, fcp: FinanzguruCsvParser, sp: SankeyPlotter):
+    def __init__(self, fcp: FinanzguruCsvParser, sp: SankeyPlotter, config: Config):
         """Initialize the main window."""
         super().__init__()
         self.fcp = fcp
@@ -40,19 +40,19 @@ class MainWindow(QMainWindow):
         self.layout: QVBoxLayout = QVBoxLayout()
 
         self.year_input = QLineEdit(self)
-        self.year_input.setPlaceholderText('2025')
-        self.year_input.text = '2025'
+        self.year_input.setPlaceholderText('Year')
+        self.year_input.setText(str(config.last_used_year))
 
         self.layout.addWidget(self.year_input)
 
         self.month_input = QLineEdit(self)
-        self.month_input.setPlaceholderText('1')
-        self.month_input.text = '1'
+        self.month_input.setPlaceholderText('Month')
+        self.month_input.setText(str(config.last_used_month))
         self.layout.addWidget(self.month_input)
 
         self.issue_level_input = QLineEdit(self)
-        self.issue_level_input.setPlaceholderText('1')
-        self.issue_level_input.text = '1'
+        self.issue_level_input.setPlaceholderText('Issue Level')
+        self.issue_level_input.setText(str(config.last_used_issue_level))
         self.layout.addWidget(
             self.issue_level_input,
         )
@@ -97,9 +97,9 @@ class MainWindow(QMainWindow):
 
     def on_submit(self):
         """Handle the submit button click."""
-        year = self.year_input.text
-        month = self.month_input.text
-        issue_level = self.issue_level_input.text
+        year = self.year_input.text()
+        month = self.month_input.text()
+        issue_level = self.issue_level_input.text()
 
         if not year or not month or not issue_level:
             QMessageBox.warning(self, 'Input Error', 'Please fill in all fields.')

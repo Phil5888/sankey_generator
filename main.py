@@ -68,6 +68,6 @@ if __name__ == '__main__':
     fcp.configure_parser(config.input_file, income_sources, income_data_frame_filters, issues_data_frame_filters)
 
     app = QApplication(sys.argv)
-    window = MainWindow(fcp, sp)
+    window = MainWindow(fcp, sp, config)
     window.show()
     sys.exit(app.exec())
