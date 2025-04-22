@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import random
 import plotly.io as pio
 
-from sankey_generator.models.sankey_income_node import SankeyIncomeNode
+from sankey_generator.models.sankey_income_node import SankeyRootNode
 from sankey_generator.models.sankey_node import SankeyNode
 from sankey_generator.models.theme import Theme
 
@@ -37,12 +37,12 @@ class SankeyPlotter:
             values.append(node.amount)
             colors.append('#%06x' % random.randint(0, 0xFFFFFF))
 
-        for issueNode in node.childNodes:
+        for issueNode in node.linkedNodes:
             self._add_nodes_to_sankey(issueNode, labels, source, target, values, colors, node_index)
 
     def _add_income_node_to_sankey(
         self,
-        income_node: SankeyIncomeNode,
+        income_node: SankeyRootNode,
         labels: list[str],
         source: list[int],
         target: list[int],
@@ -75,7 +75,7 @@ class SankeyPlotter:
         for issueNode in income_node.issueNodes:
             self._add_nodes_to_sankey(issueNode, labels, source, target, values, colors, node_index)
 
-    def _get_sankey_fig(self, income_node: SankeyIncomeNode, year: int, month: int) -> go.Figure:
+    def _get_sankey_fig(self, income_node: SankeyRootNode, year: int, month: int) -> go.Figure:
         """Get the sankey diagram Figure."""
         labels: list[str] = []
         source: list[int] = []
@@ -122,7 +122,7 @@ class SankeyPlotter:
 
         return fig
 
-    def get_sankey_html(self, income_node: SankeyIncomeNode, year: int, month: int) -> str:
+    def get_sankey_html(self, income_node: SankeyRootNode, year: int, month: int) -> str:
         """Plot the sankey diagram and return it as an HTML div."""
         fig = self._get_sankey_fig(income_node, year, month)
         return pio.to_html(fig, full_html=False)

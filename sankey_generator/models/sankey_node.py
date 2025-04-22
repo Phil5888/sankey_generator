@@ -1,18 +1,21 @@
 """Model for a Sankey node."""
 
-from sankey_generator.models.csv_filter import CsvFilter
-
 
 class SankeyNode:
-    """Model for a Sankey node."""
+    """
+    Base Model for a Sankey node. A node can be a income or an issue.
 
-    def __init__(self, amount, label, csv_filter: CsvFilter):
+    Linked nodes are:
+    - Issue nodes (right side of the sankey diagram) and their sub categories.
+    - Income nodes (left side of the sankey diagram) and their sub categories.
+    """
+
+    def __init__(self, amount: float, label: str):
         """Initialize the Sankey node."""
         self.amount = amount
         self.label = label
-        self.childNodes = []
-        self.csv_filter = csv_filter
+        self.linkedNodes: list[SankeyNode] = []
 
-    def add_child(self, child):
+    def add_linked_node(self, child):
         """Add a child to the Sankey node."""
-        self.childNodes.append(child)
+        self.linkedNodes.append(child)
