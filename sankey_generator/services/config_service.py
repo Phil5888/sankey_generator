@@ -62,3 +62,34 @@ class ConfigService:
             issue_category.sub_category = self._parseIssuesHierarchy(sub_category)
 
         return issue_category
+
+    def _save_config(self):
+        """Save the configuration data to the config file."""
+        with open('config.json', 'w') as file:
+            json.dump(self.config.to_dict(), file, indent=4)
+
+    def _save_string_value(self, key: str, new_value: str) -> None:
+        """Save a string value to the config file."""
+        setattr(self.config, key, new_value)
+        self._save_config()
+
+    def _save_int_value(self, key: str, new_value: int) -> None:
+        """Save an integer value to the config file."""
+        setattr(self.config, key, new_value)
+        self._save_config()
+
+    def save_dark_mode(self, dark_mode: bool) -> None:
+        """Save the dark mode value to the config file."""
+        self._save_string_value('dark_mode', dark_mode)
+
+    def save_last_used_month(self, last_used_month: int) -> None:
+        """Save the last used month value to the config file."""
+        self._save_int_value('last_used_month', last_used_month)
+
+    def save_last_used_year(self, last_used_year: int) -> None:
+        """Save the last used year value to the config file."""
+        self._save_int_value('last_used_year', last_used_year)
+
+    def save_last_used_issue_level(self, last_used_issue_level: int) -> None:
+        """Save the last used issue level value to the config file."""
+        self._save_int_value('last_used_issue_level', last_used_issue_level)

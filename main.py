@@ -63,6 +63,6 @@ if __name__ == '__main__':
     )
 
     app: QApplication = QApplication(sys.argv)
-    window: MainWindow = MainWindow(fcp, sp, config)
+    window: MainWindow = MainWindow(fcp, sp, config_service)
     window.show()
     sys.exit(app.exec())
