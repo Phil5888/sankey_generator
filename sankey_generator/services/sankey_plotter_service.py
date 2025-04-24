@@ -9,7 +9,7 @@ from sankey_generator.models.sankey_node import SankeyNode
 from sankey_generator.models.theme import Theme
 
 
-class SankeyPlotter:
+class SankeyPlotterService:
     """SankeyPlotter class."""
 
     def __init__(self, amount_out_name: str):

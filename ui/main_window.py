@@ -12,8 +12,8 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
 )
 
-from sankey_generator.finanzguru_csv_parser import FinanzguruCsvParser
-from sankey_generator.sankey_plotter import SankeyPlotter
+from sankey_generator.services.finanzguru_csv_parser_service import FinanzguruCsvParserService
+from sankey_generator.services.sankey_plotter_service import SankeyPlotterService
 from sankey_generator.models.config import Config
 from sankey_generator.models.theme import Theme
 import os.path
@@ -27,7 +27,7 @@ from ui.animated_toggle import AnimatedToggle
 class MainWindow(QMainWindow):
     """Main window of the Sankey Diagram Generator."""
 
-    def __init__(self, fcp: FinanzguruCsvParser, sp: SankeyPlotter, config: Config):
+    def __init__(self, fcp: FinanzguruCsvParserService, sp: SankeyPlotterService, config: Config):
         """Initialize the main window."""
         super().__init__()
         self.fcp = fcp

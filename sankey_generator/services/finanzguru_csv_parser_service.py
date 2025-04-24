@@ -6,7 +6,7 @@ from sankey_generator.models.sankey_income_node import SankeyRootNode
 from sankey_generator.models.config import DataFrameFilter, AccountSource, IssueCategory
 
 
-class FinanzguruCsvParser:
+class FinanzguruCsvParserService:
     """Finanzguru CSV parser."""
 
     def __init__(

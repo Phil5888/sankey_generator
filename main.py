@@ -4,8 +4,8 @@ import sys
 import os
 from PyQt6.QtWidgets import QApplication
 from ui.main_window import MainWindow
-from sankey_generator.finanzguru_csv_parser import FinanzguruCsvParser
-from sankey_generator.sankey_plotter import SankeyPlotter
+from sankey_generator.services.finanzguru_csv_parser_service import FinanzguruCsvParserService
+from sankey_generator.services.sankey_plotter_service import SankeyPlotterService
 from sankey_generator.models.config import Config
 
 
@@ -42,9 +42,9 @@ if __name__ == '__main__':
     os.makedirs('output_files', exist_ok=True)
 
     # Configure parser and plotter
-    sp = SankeyPlotter(config.amount_out_name)
+    sp = SankeyPlotterService(config.amount_out_name)
 
-    fcp = FinanzguruCsvParser(
+    fcp = FinanzguruCsvParserService(
         config.issues_hierarchy,
         config.analysis_year_column_name,
         config.analysis_month_column_name,
