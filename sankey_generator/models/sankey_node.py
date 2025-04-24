@@ -16,6 +16,6 @@ class SankeyNode:
         self.label = label
         self.linkedNodes: list[SankeyNode] = []
 
-    def add_linked_node(self, child):
+    def add_linked_node(self, child: 'SankeyNode'):
         """Add a child to the Sankey node."""
         self.linkedNodes.append(child)

@@ -179,4 +179,5 @@ output_files/
 static/
 
 config.json
+config_old.json
 temp_plot.html

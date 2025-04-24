@@ -4,8 +4,6 @@ import sys
 import os
 from PyQt6.QtWidgets import QApplication
 from ui.main_window import MainWindow
-from sankey_generator.models.csv_filter import CsvFilter
-from sankey_generator.models.data_frame_filter import DataFrameFilter
 from sankey_generator.finanzguru_csv_parser import FinanzguruCsvParser
 from sankey_generator.sankey_plotter import SankeyPlotter
 from sankey_generator.models.config import Config
@@ -46,16 +44,8 @@ if __name__ == '__main__':
     # Configure parser and plotter
     sp = SankeyPlotter(config.amount_out_name)
 
-    income_sources = [CsvFilter(src['label'], src['column'], src['values']) for src in config.income_sources]
-    income_data_frame_filters = [
-        DataFrameFilter(flt['column'], flt['values']) for flt in config.income_data_frame_filters
-    ]
-    issues_data_frame_filters = [
-        DataFrameFilter(flt['column'], flt['values']) for flt in config.issues_data_frame_filters
-    ]
     fcp = FinanzguruCsvParser(
-        config.column_analysis_main_category,
-        config.column_analysis_sub_category,
+        config.issues_hierarchy,
         config.analysis_year_column_name,
         config.analysis_month_column_name,
         config.income_node_name,
@@ -63,7 +53,12 @@ if __name__ == '__main__':
         config.other_income_name,
         config.not_used_income_names,
     )
-    fcp.configure_parser(config.input_file, income_sources, income_data_frame_filters, issues_data_frame_filters)
+    fcp.configure_parser(
+        config.input_file,
+        config.income_reference_accounts,
+        config.income_data_frame_filters,
+        config.issues_data_frame_filters,
+    )
 
     app = QApplication(sys.argv)
     window = MainWindow(fcp, sp, config)
