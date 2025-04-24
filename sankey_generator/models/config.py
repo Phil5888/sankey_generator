@@ -96,7 +96,7 @@ class Config:
         self.issues_hierarchy: IssueCategory = self._getIssuesHierarchy(config_data['issues_hierarchy'])
 
         self.income_node_name = config_data['income_node_name']
-        self.not_used_income_names = config_data['not_used_income_names']
+        self.not_used_income_name = config_data['not_used_income_name']
         self.analysis_year_column_name = config_data['analysis_year_column_name']
         self.analysis_month_column_name = config_data['analysis_month_column_name']
         self.amount_out_name = config_data['amount_out_name']

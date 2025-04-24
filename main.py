@@ -51,7 +51,7 @@ if __name__ == '__main__':
         config.income_node_name,
         config.amount_out_name,
         config.other_income_name,
-        config.not_used_income_names,
+        config.not_used_income_name,
     )
     fcp.configure_parser(
         config.input_file,

@@ -16,9 +16,17 @@ class SankeyRootNode:
         """Add an issue to the income node."""
         self.issueNodes.append(issieNode)
 
+    def add_issues(self, issueNodes: list[SankeyNode]):
+        """Add issues to the income node."""
+        self.issueNodes += issueNodes
+
     def add_income(self, incomeNode: SankeyNode):
         """Add an income to the income node."""
         self.incomeNodes.append(incomeNode)
+
+    def add_incomes(self, incomeNodes: list[SankeyNode]):
+        """Add incomes to the income node."""
+        self.incomeNodes += incomeNodes
 
     def get_issues_amount(self):
         """Get the total amount of issues."""

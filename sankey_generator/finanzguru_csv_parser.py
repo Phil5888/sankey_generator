@@ -17,7 +17,7 @@ class FinanzguruCsvParser:
         income_node_name: str,
         amount_out_name: str,
         other_income_name: str,
-        not_used_income_names: list[str],
+        not_used_income_name: list[str],
     ):
         """Initialize the Finanzguru CSV parser."""
         self.issues_hierarchy = issues_hierarchy
@@ -26,7 +26,7 @@ class FinanzguruCsvParser:
         self.income_node_name = income_node_name
         self.amount_out_name = amount_out_name
         self.other_income_name = other_income_name
-        self.not_used_income_names = not_used_income_names
+        self.not_used_income_name = not_used_income_name
 
     def _get_sum(self, df: pd.DataFrame) -> float:
         """Return the sum of column in the DataFrame."""
@@ -63,8 +63,12 @@ class FinanzguruCsvParser:
 
         return df
 
-    def _create_income_nodes(self, income_df: pd.DataFrame, income_accounts: list[AccountSource]) -> list[SankeyNode]:
+    def _create_income_nodes(self, df: pd.DataFrame, income_accounts: list[AccountSource]) -> list[SankeyNode]:
         """Create income nodes from the income DataFrame and income sources."""
+        income_df: pd.DataFrame = df
+        for data_frame_filter in self.income_data_frame_fitlers:
+            income_df = income_df.loc[df[data_frame_filter.csv_column_name].isin(data_frame_filter.csv_value_filters)]
+
         income_nodes: list[SankeyNode] = []
         for income_source in income_accounts:
             for income_filter in income_source.income_filters:
@@ -80,6 +84,25 @@ class FinanzguruCsvParser:
 
         income_nodes.append(SankeyNode(sum_other_income, self.other_income_name))
         return income_nodes
+
+    def _create_all_issue_nodes(
+        self,
+        df: pd.DataFrame,
+        issue_category: IssueCategory,
+        used_category_names: list[str],
+        issue_depth: int,
+    ) -> list[SankeyNode]:
+        """Create all issue nodes from the issues DataFrame and main categories."""
+        issues_df: pd.DataFrame = df
+        for data_frame_filter in self.issues_data_frame_fitlers:
+            issues_df = issues_df.loc[df[data_frame_filter.csv_column_name].isin(data_frame_filter.csv_value_filters)]
+
+        return self._create_issue_nodes(
+            issues_df,
+            issue_category,
+            used_category_names,
+            issue_depth,
+        )
 
     def _create_issue_nodes(
         self,
@@ -154,34 +177,18 @@ class FinanzguruCsvParser:
             month,
         )
 
-        income_df: pd.DataFrame = df
-        for data_frame_filter in self.income_data_frame_fitlers:
-            income_df = income_df.loc[df[data_frame_filter.csv_column_name].isin(data_frame_filter.csv_value_filters)]
-
-        issues_df: pd.DataFrame = df
-        for data_frame_filter in self.issues_data_frame_fitlers:
-            issues_df = issues_df.loc[df[data_frame_filter.csv_column_name].isin(data_frame_filter.csv_value_filters)]
-
         root_node = SankeyRootNode(self.income_node_name)
 
-        income_nodes = self._create_income_nodes(income_df, self.income_sources)
-        for income_node_item in income_nodes:
-            root_node.add_income(income_node_item)
+        root_node.add_incomes(self._create_income_nodes(df, self.income_sources))
 
         # We need to know all used category names because sankey plot will add a circular reference if node name is ussed multiple times
         used_category_names: list[str] = []
-        issue_nodes = self._create_issue_nodes(issues_df, self.issues_hierarchy, used_category_names, issue_depth)
-        for issue_node in issue_nodes:
-            root_node.add_issue(issue_node)
+        root_node.add_issues(self._create_all_issue_nodes(df, self.issues_hierarchy, used_category_names, issue_depth))
 
         # not used income
         unused_income = root_node.get_income_amount() - root_node.get_issues_amount()
         if unused_income > 0:
-            unused_income_node = SankeyNode(unused_income, self.not_used_income_names[0])
-
-            if issue_depth == 2:
-                unused_income_node.add_linked_node(SankeyNode(unused_income, self.not_used_income_names[1]))
-
+            unused_income_node = SankeyNode(unused_income, self.not_used_income_name)
             root_node.add_issue(unused_income_node)
 
         return root_node

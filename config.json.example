@@ -73,7 +73,7 @@
     "column_analysis_main_category": "Analyse-Hauptkategorie",
     "column_analysis_sub_category": "Analyse-Unterkategorie",
     "income_node_name": "Einnahmen",
-    "not_used_income_names": [
+    "not_used_income_name": [
         "Nicht verwendetes einkommen",
         "Auf giro verbleibend"
     ],
