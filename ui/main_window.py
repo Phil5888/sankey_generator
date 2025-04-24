@@ -14,9 +14,11 @@ from PyQt6.QtWebEngineWidgets import QWebEngineView
 from ui.animated_toggle import AnimatedToggle
 from sankey_generator.controllers.main_controller import MainController
 from PyQt6.QtWebEngineCore import QWebEngineProfile
+from sankey_generator.utils.observer import Observer
+from PyQt6.QtCore import QUrl
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, Observer):
     """Main window of the Sankey Diagram Generator."""
 
     def __init__(self, controller: MainController):
@@ -25,6 +27,15 @@ class MainWindow(QMainWindow):
         self.controller: MainController = controller
         self.config = controller.config_service.config
         self._init_ui()
+
+    def update(self, observable, *args, **kwargs):
+        """Update method for the observer pattern."""
+        if observable == self.controller:
+            if isinstance(args[0], QUrl):
+                # Update the browser with the new HTML content
+                self.diagram_browser.setUrl(args[0])
+        else:
+            raise ValueError(f'Unknown observable: {observable}')
 
     def _init_ui(self):
         """Create the user interface."""

@@ -61,6 +61,8 @@ if __name__ == '__main__':
 
     # Initialize and show main window
     window = MainWindow(controller)
+    controller.add_observer(window)
+
     window.show()
 
     app.exec()

@@ -6,10 +6,12 @@ from sankey_generator.services.config_service import ConfigService
 from sankey_generator.services.finanzguru_csv_parser_service import FinanzguruCsvParserService
 from sankey_generator.services.sankey_plotter_service import SankeyPlotterService
 from PyQt6.QtWebEngineCore import QWebEngineDownloadRequest
-from PyQt6.QtCore import QDir
+from PyQt6.QtCore import QDir, QUrl
+from sankey_generator.utils.observer import Observable
+import os
 
 
-class MainController:
+class MainController(Observable):
     """Controller for the Sankey Generator application."""
 
     def __init__(
@@ -23,6 +25,8 @@ class MainController:
         self.finanzguru_parser_service: FinanzguruCsvParserService = parser_service
         self.sankey_plotter_service: SankeyPlotterService = plotter_service
         self.theme_manager = ThemeManager(config_service)
+        self.current_diagram_url: QUrl = None
+        super().__init__()
 
     def save_year(self, year: str):
         """Save the last used year."""
@@ -80,8 +84,9 @@ class MainController:
             f.write(self.get_html(fig_html))
 
         # Load the file in WebView
-        # TODO: Observer required
-        # self.diagram_browser.setUrl(QUrl.fromLocalFile(os.path.abspath(temp_file)))
+        current_diagram_url: QUrl = QUrl.fromLocalFile(os.path.abspath(temp_file))
+        # Notify observers about the new diagram URL
+        self.notify_observers(current_diagram_url)
 
         print(
             f'Generating Sankey diagram for {self.current_year}-{self.current_month} with issue level {self.current_issue_level}'

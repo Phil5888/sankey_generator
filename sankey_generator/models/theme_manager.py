@@ -1,6 +1,7 @@
 """Theme manager for handling theme-related logic and applying themes to the application."""
 
 from sankey_generator.models.theme import Theme
+from sankey_generator.services.config_service import ConfigService
 
 
 class ThemeManager:
@@ -8,7 +9,7 @@ class ThemeManager:
 
     def __init__(self, config_service):
         """Initialize the theme manager."""
-        self.config_service = config_service
+        self.config_service: ConfigService = config_service
 
     def apply_theme(self, window):
         """Apply the current theme to the given window."""
