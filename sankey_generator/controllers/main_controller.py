@@ -24,7 +24,7 @@ class MainController(Observable):
         self.config_service: ConfigService = config_service
         self.finanzguru_parser_service: FinanzguruCsvParserService = parser_service
         self.sankey_plotter_service: SankeyPlotterService = plotter_service
-        self.theme_manager = ThemeManager(config_service)
+        self.theme_manager: ThemeManager = ThemeManager(config_service)
         self.current_diagram_url: QUrl = None
         super().__init__()
 
@@ -43,6 +43,7 @@ class MainController(Observable):
     def toggle_theme(self):
         """Toggle the theme between dark and light mode."""
         self.theme_manager.toggle_theme()
+        self.notify_observers('dark_mode', self.config_service.config.dark_mode)
 
     def get_initial_html(self) -> str:
         """Get the initial HTML content for the browser."""

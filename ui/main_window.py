@@ -34,6 +34,16 @@ class MainWindow(QMainWindow, Observer):
             if isinstance(args[0], QUrl):
                 # Update the browser with the new HTML content
                 self.diagram_browser.setUrl(args[0])
+            if args[0] == 'dark_mode':
+                # Update the theme
+                colors = self.controller.theme_manager.get_colors()
+                with open('theme.qss', 'r') as file:
+                    stylesheet = file.read().format(**colors)
+
+                self.setStyleSheet(stylesheet)
+                # BUG: This triggers the generation even if it was not generated before, or the user entered different values
+                # -> Use last values?
+                self.controller.on_submit()
         else:
             raise ValueError(f'Unknown observable: {observable}')
 
