@@ -18,13 +18,7 @@ class AccountSource:
         """Initialize the income source."""
         self.account_name: str = account_name
         self.iban: str = iban
-        # Income filters are required to ignore transactions from one account to the other
         self.income_filters: list[IncomeFilter] = []
-        # TODO: Do issue filters make sense?
-
-    def add_income_filter(self, income_source: IncomeFilter):
-        """Add an income source to the list of income sources."""
-        self.income_filters.append(income_source)
 
 
 class DataFrameFilter:
@@ -43,10 +37,6 @@ class IssueCategory:
         """Initialize the issue category."""
         self.csv_column_name: str = csv_column_name
         self.sub_category: IssueCategory = None
-
-    def add_sub_category(self, sub_category: 'IssueCategory'):
-        """Add a sub issue to the issue category."""
-        self.sub_category = sub_category
 
     def get_depth(self) -> int:
         """Get the depth of the issue category."""

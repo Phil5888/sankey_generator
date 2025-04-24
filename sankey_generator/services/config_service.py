@@ -47,7 +47,7 @@ class ConfigService:
             for income_filter in account['income_filters']:
                 transaction_source = IncomeFilter(income_filter['sankey_label'], income_filter['csv_column_name'])
                 transaction_source.csv_value_filters = income_filter.get('csv_value_filters', [])
-                account_source.add_income_filter(transaction_source)
+                account_source.income_filters.append(transaction_source)
             income_reference_accounts.append(account_source)
 
         return income_reference_accounts
@@ -59,6 +59,6 @@ class ConfigService:
         issue_category = IssueCategory(issues_hierarchy['csv_column_name'])
         sub_category = issues_hierarchy.get('sub_category')
         if sub_category is not None:
-            issue_category.add_sub_category(self._parseIssuesHierarchy(sub_category))
+            issue_category.sub_category = self._parseIssuesHierarchy(sub_category)
 
         return issue_category
