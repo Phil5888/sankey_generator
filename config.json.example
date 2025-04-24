@@ -2,87 +2,45 @@
     "input_file": "input_files/input.csv",
     "output_file": "output_files/output.png",
     "income_reference_accounts": [
-        "Income iban 1",
-        "Income iban 2"
-    ],
-    "income_sources": [
         {
-            "label": "Zinsen / dividende",
-            "column": "Verwendungszweck",
-            "values": [
-                "zins/dividende"
+            "account_name": "Account 1",
+            "iban": "IBAN 1",
+            "income_filters": [
+                { "sankey_label": "Zinsen / dividende", "csv_column_name": "Verwendungszweck", "csv_value_filters": ["zins/dividende"] },
+                { "sankey_label": "Gehalt", "csv_column_name": "Beguenstigter/Auftraggeber", "csv_value_filters": ["Your employer"] },
             ]
         },
         {
-            "label": "Gehalt",
-            "column": "Beguenstigter/Auftraggeber",
-            "values": [
-                "Your employer"
-            ]
-        },
-        {
-            "label": "Steuererstattung",
-            "column": "Beguenstigter/Auftraggeber",
-            "values": [
-                "finanzamt"
-            ]
-        },
-        {
-            "label": "Other income",
-            "column": "Beguenstigter/Auftraggeber",
-            "values": [
-                "other income source"
-            ]
+            "account_name": "Account 2",
+            "iban": "IBAN 2",
+            "income_filters": [{ "sankey_label": "Zinsen / dividende", "csv_column_name": "Verwendungszweck", "csv_value_filters": ["zins/dividende"] }]
         }
     ],
     "income_data_frame_filters": [
-        {
-            "column": "Analyse-Betrag",
-            "values": [
-                "Einnahmen"
-            ]
-        },
-        {
-            "column": "Analyse-Umbuchung",
-            "values": [
-                "nein"
-            ]
-        },
-        {
-            "column": "Referenzkonto",
-            "values": [
-                "Income iban 1",
-                "Income iban 2"
-            ]
-        }
+        { "csv_column_name": "Analyse-Betrag", "csv_value_filters": ["Einnahmen"] },
+        { "csv_column_name": "Analyse-Umbuchung", "csv_value_filters": ["nein"] },
+        { "csv_column_name": "Referenzkonto", "csv_value_filters": ["IBAN 1", "IBAN 2"] }
     ],
     "issues_data_frame_filters": [
-        {
-            "column": "Analyse-Betrag",
-            "values": [
-                "Ausgaben"
-            ]
-        },
-        {
-            "column": "Analyse-Umbuchung",
-            "values": [
-                "nein"
-            ]
+        { "csv_column_name": "Analyse-Betrag", "csv_value_filters": ["Ausgaben"] },
+        { "csv_column_name": "Analyse-Umbuchung", "csv_value_filters": ["nein"] }
+    ],
+    "issues_hierarchy": {
+        "csv_column_name": "Analyse-Hauptkategorie",
+        "sub_category": {
+            "csv_column_name": "Analyse-Unterkategorie",
+            "sub_category": null
         }
-    ],
-    "column_analysis_main_category": "Analyse-Hauptkategorie",
-    "column_analysis_sub_category": "Analyse-Unterkategorie",
+    },
+
     "income_node_name": "Einnahmen",
-    "not_used_income_name": [
-        "Nicht verwendetes einkommen",
-        "Auf giro verbleibend"
-    ],
+    "not_used_income_name": "Nicht verwendetes einkommen",
     "analysis_year_column_name": "Analyse-Jahr",
     "analysis_month_column_name": "Analyse-Monat",
     "amount_out_name": "Betrag",
     "other_income_name": "Sonstige Einnahmen",
     "last_used_month": 8,
     "last_used_year": 2024,
-    "last_used_issue_level": 1,
+    "last_used_issue_level": 2,
     "dark_mode": true
 }
