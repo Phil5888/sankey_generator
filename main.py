@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QApplication
 from ui.main_window import MainWindow
 from sankey_generator.services.finanzguru_csv_parser_service import FinanzguruCsvParserService
 from sankey_generator.services.sankey_plotter_service import SankeyPlotterService
+from sankey_generator.services.config_service import ConfigService
 from sankey_generator.models.config import Config
 
 
@@ -35,16 +36,17 @@ from sankey_generator.models.config import Config
 
 if __name__ == '__main__':
     # Load configuration
-    config = Config('config.json')
+    config_service: ConfigService = ConfigService('config.json')
+    config: Config = config_service.config
 
     # Create required folders
     os.makedirs('input_files', exist_ok=True)
     os.makedirs('output_files', exist_ok=True)
 
     # Configure parser and plotter
-    sp = SankeyPlotterService(config.amount_out_name)
+    sp: SankeyPlotterService = SankeyPlotterService(config.amount_out_name)
 
-    fcp = FinanzguruCsvParserService(
+    fcp: FinanzguruCsvParserService = FinanzguruCsvParserService(
         config.issues_hierarchy,
         config.analysis_year_column_name,
         config.analysis_month_column_name,
@@ -60,7 +62,7 @@ if __name__ == '__main__':
         config.issues_data_frame_filters,
     )
 
-    app = QApplication(sys.argv)
-    window = MainWindow(fcp, sp, config)
+    app: QApplication = QApplication(sys.argv)
+    window: MainWindow = MainWindow(fcp, sp, config)
     window.show()
     sys.exit(app.exec())
