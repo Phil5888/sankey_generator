@@ -5,46 +5,32 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QLineEdit,
-    QCheckBox,
-    QMessageBox,
     QPushButton,
     QLabel,
     QHBoxLayout,
 )
-
-from sankey_generator.services.finanzguru_csv_parser_service import FinanzguruCsvParserService
-from sankey_generator.services.sankey_plotter_service import SankeyPlotterService
-from sankey_generator.services.config_service import ConfigService
-from sankey_generator.models.config import Config
-from sankey_generator.models.theme import Theme
-import os.path
+from PyQt6.QtCore import Qt
 from PyQt6.QtWebEngineWidgets import QWebEngineView
-
-from PyQt6.QtCore import QUrl, QDir, Qt
-from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEngineDownloadRequest
 from ui.animated_toggle import AnimatedToggle
+from sankey_generator.controllers.main_controller import MainController
+from PyQt6.QtWebEngineCore import QWebEngineProfile
 
 
 class MainWindow(QMainWindow):
     """Main window of the Sankey Diagram Generator."""
 
-    def __init__(self, fcp: FinanzguruCsvParserService, sp: SankeyPlotterService, config_service: ConfigService):
+    def __init__(self, controller: MainController):
         """Initialize the main window."""
         super().__init__()
-        self.fcp = fcp
-        self.sp = sp
-        self.config_service = config_service
-        self.config = config_service.config
-        self.current_year = None
-        self.current_month = None
-        self.current_issue_level = None
+        self.controller: MainController = controller
+        self.config = controller.config_service.config
         self._init_ui()
 
     def _init_ui(self):
         """Create the user interface."""
         self.setWindowTitle('Sankey Generator')
         self.setGeometry(100, 100, 800, 600)
-        self._apply_theme()
+        self.controller.theme_manager.apply_theme(self)
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -56,37 +42,31 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(QLabel('Sankey Diagram Generator', self))
         self.layout.addWidget(QLabel('Please enter the following information:', self))
 
-        # Input Layout (Smaller section)
+        # Input Layout
         input_layout: QVBoxLayout = QVBoxLayout()
 
-        # Year
+        # Year Input
         input_layout.addWidget(QLabel('Year'))
-        # get property name of self.config.last_used_year
-
-        self.year_input = self._create_input_field(
-            'Year', self.config.last_used_year, self.config_service.save_last_used_year
-        )
+        self.year_input = self._create_input_field('Year', self.config.last_used_year, self.controller.save_year)
         input_layout.addWidget(self.year_input)
 
-        # Month
+        # Month Input
         input_layout.addWidget(QLabel('Month'))
-        self.month_input = self._create_input_field(
-            'Month', self.config.last_used_month, self.config_service.save_last_used_month
-        )
+        self.month_input = self._create_input_field('Month', self.config.last_used_month, self.controller.save_month)
         input_layout.addWidget(self.month_input)
 
-        # Issue Level
+        # Issue Level Input
         input_layout.addWidget(QLabel('Issue Level'))
         self.issue_level_input = self._create_input_field(
-            'Issue Level', self.config.last_used_issue_level, self.config_service.save_last_used_issue_level
+            'Issue Level', self.config.last_used_issue_level, self.controller.save_issue_level
         )
         input_layout.addWidget(self.issue_level_input)
 
         # Generate Button
-        self.generate_button = self._create_button('Start Sankey generation', self._on_submit)
+        self.generate_button = self._create_button('Start Sankey generation', self.controller.on_submit)
         input_layout.addWidget(self.generate_button)
 
-        # create a horizontal box layout to add the dark mode switch
+        # Dark Mode Switch
         horizontal_layout = QHBoxLayout()
         horizontal_layout.setSpacing(10)
         horizontal_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -95,72 +75,30 @@ class MainWindow(QMainWindow):
         horizontal_layout.addWidget(self.toggle_switch)
         input_layout.addLayout(horizontal_layout)
 
-        # Add input layout to the main layout with a small stretch
+        # Add input layout to the main layout
         self.layout.addLayout(input_layout, stretch=1)
 
-        # Section: Browser (Should take most of the space)
+        # Browser Section
         self.diagram_browser = self._create_browser()
-        self.layout.addWidget(self.diagram_browser, stretch=5)  # This will expand more than inputs
+        self.layout.addWidget(self.diagram_browser, stretch=5)
 
         self.central_widget.setLayout(self.layout)
 
-    def _apply_theme(self):
-        """Apply the current theme to the main window."""
-        colors = Theme.get_colors()
-
-        with open('theme.qss', 'r') as file:
-            stylesheet = file.read().format(**colors)
-
-        self.setStyleSheet(stylesheet)
-        self._create_and_add_sankey()
-
-    def _toggle_theme(self):
-        """Toggle the theme between dark and light mode."""
-        Theme.toggle_mode()
-        if self.diagram_browser:
-            self.diagram_browser.setHtml(self._get_html())
-        self._apply_theme()
-        self.config_service.save_dark_mode(Theme.dark_mode)
-        # Update toggle switch colors
-        self.toggle_switch.update_colors()
-
-    def _on_download_requested(self, download_item: QWebEngineDownloadRequest) -> None:
-        """Handle download requests."""
-        download_path = QDir.currentPath() + '/output_files'
-        QDir().mkpath(download_path)
-        download_item.setDownloadDirectory(download_path)
-        download_item.setDownloadFileName('sankey.png')
-        download_item.accept()  # Accept the download request, otherwise the download will not start
-
-    def _create_dark_mode_switch(self) -> QCheckBox:
+    def _create_dark_mode_switch(self) -> AnimatedToggle:
         """Create a dark mode switch."""
         toggle_switch = AnimatedToggle()
         toggle_switch.setFixedSize(toggle_switch.sizeHint())
-        toggle_switch.setChecked(Theme.dark_mode)
-        toggle_switch.stateChanged.connect(self._toggle_theme)
-
+        toggle_switch.setChecked(self.config.dark_mode)
+        toggle_switch.stateChanged.connect(self.controller.toggle_theme)
         return toggle_switch
 
-    def _create_input_field(self, placeholder_text: str, default_value: str, save_config_func) -> QLineEdit:
+    def _create_input_field(self, placeholder_text: str, default_value: str, save_func) -> QLineEdit:
         """Create an input field with the given placeholder text and default value."""
         input_field = QLineEdit(self)
         input_field.setPlaceholderText(placeholder_text)
         input_field.setText(str(default_value))
-
-        # save the value on cahnge to config
-        input_field.textChanged.connect(lambda text: save_config_func(text))
-
+        input_field.textChanged.connect(lambda text: save_func(text))
         return input_field
-
-    def _create_browser(self) -> QWebEngineView:
-        """Create a browser to display the Sankey diagram."""
-        browser = QWebEngineView()
-        profile = QWebEngineProfile.defaultProfile()
-        # Handle download requests
-        profile.downloadRequested.connect(self._on_download_requested)
-        browser.setHtml(self._get_html())
-
-        return browser
 
     def _create_button(self, text, on_click) -> QPushButton:
         """Create a button with the given text and on_click function."""
@@ -169,53 +107,12 @@ class MainWindow(QMainWindow):
 
         return button
 
-    def _on_submit(self) -> None:
-        """Handle the submit button click."""
-        self.current_year = self.year_input.text()
-        self.current_month = self.month_input.text()
-        self.current_issue_level = self.issue_level_input.text()
+    def _create_browser(self) -> QWebEngineView:
+        """Create a browser to display the Sankey diagram."""
+        browser = QWebEngineView()
+        profile = QWebEngineProfile.defaultProfile()
+        # Handle download requests
+        profile.downloadRequested.connect(self.controller.on_download_requested)
+        browser.setHtml(self.controller.get_html())
 
-        if not self.current_year or not self.current_month or not self.current_issue_level:
-            QMessageBox.warning(self, 'Input Error', 'Please fill in all fields.')
-            return
-        self._create_and_add_sankey()
-
-    def _get_html(self, content: str = '') -> str:
-        """Get the HTML content with the given content."""
-        return f'<html><body style="background-color: {Theme.get_colors()["background"]};">{content}</body></html>'
-
-    def _create_and_add_sankey(self):
-        if not self.current_year or not self.current_month or not self.current_issue_level:
-            return
-
-        fig_html = self.generate_sankey_html(
-            int(self.current_year), int(self.current_month), int(self.current_issue_level)
-        )
-
-        # Save the HTML to a temporary file
-        temp_file = 'temp_plot.html'
-        with open(temp_file, 'w', encoding='utf-8') as f:
-            f.write(self._get_html(fig_html))
-
-        # Load the file in WebView
-        self.diagram_browser.setUrl(QUrl.fromLocalFile(os.path.abspath(temp_file)))
-
-        print(
-            f'Generating Sankey diagram for {self.current_year}-{self.current_month} with issue level {self.current_issue_level}'
-        )
-
-    def generate_sankey_html(self, year, month, issue_level) -> str:
-        """Generate the Sankey diagram for the given year, month and issue level."""
-        # Parse CSV and plot Sankey diagram
-        income_node = self.fcp.parse_csv(
-            year,
-            month,
-            issue_level,
-        )
-
-        # Generate the interactive Sankey diagram as an HTML div
-        fig_html = self.sp.get_sankey_html(income_node, year, month)
-
-        print('Sankey generated')
-
-        return fig_html
+        return browser
