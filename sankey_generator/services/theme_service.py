@@ -11,12 +11,12 @@ class ThemeService:
         """Initialize the theme manager."""
         self.config_service: ConfigService = config_service
 
-    def apply_theme(self, window):
+    def get_stylesheet(self) -> str:
         """Apply the current theme to the given window."""
         colors = Theme.get_colors()
         with open('sankey_generator/resources/theme.qss', 'r') as file:
             stylesheet = file.read().format(**colors)
-        window.setStyleSheet(stylesheet)
+        return stylesheet
 
     def get_colors(self) -> dict:
         """Get the current theme colors."""

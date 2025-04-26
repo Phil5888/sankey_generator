@@ -26,24 +26,36 @@ class MainController(Observable):
         self.sankey_plotter_service: SankeyPlotterService = plotter_service
         self.theme_manager: ThemeService = ThemeService(config_service)
         self.current_diagram_url: QUrl = None
+
+        config: Config = self.config_service.config
+        self.current_year: int = config.last_used_year
+        self.current_month: int = config.last_used_month
+        self.current_issue_level: int = config.last_used_issue_level
+        self.sankey_generated: bool = False
         super().__init__()
 
-    def save_year(self, year: str):
-        """Save the last used year."""
-        self.config_service.save_last_used_year(int(year))
+    def set_year(self, year: str):
+        """Set the last used year."""
+        self.current_year = int(year)
 
-    def save_month(self, month: str):
-        """Save the last used month."""
-        self.config_service.save_last_used_month(int(month))
+    def set_month(self, month: str):
+        """Set the last used month."""
+        self.current_month = int(month)
 
-    def save_issue_level(self, issue_level: str):
-        """Save the last used issue level."""
-        self.config_service.save_last_used_issue_level(int(issue_level))
+    def set_issue_level(self, issue_level: str):
+        """Set the last used issue level."""
+        self.current_issue_level = int(issue_level)
 
-    def toggle_theme(self):
+    def _save_last_used_values_to_config(self):
+        """Save the last used values."""
+        self.config_service.save_last_used_year(self.current_year)
+        self.config_service.save_last_used_month(self.current_month)
+        self.config_service.save_last_used_issue_level(self.current_issue_level)
+
+    def on_toggle_theme(self):
         """Toggle the theme between dark and light mode."""
         self.theme_manager.toggle_theme()
-        self.notify_observers('dark_mode', self.config_service.config.dark_mode)
+        self.notify_observers('theme')
 
     def get_initial_html(self) -> str:
         """Get the initial HTML content for the browser."""
@@ -54,30 +66,33 @@ class MainController(Observable):
         income_node = self.finanzguru_parser_service.parse_csv(year, month, issue_level)
         return self.sankey_plotter_service.get_sankey_html(income_node, year, month)
 
-    def on_submit(self) -> None:
+    def on_generate_sankey(self) -> None:
         """Handle the submit button click."""
-        config: Config = self.config_service.config
-        self.current_year = config.last_used_year
-        self.current_month = config.last_used_month
-        self.current_issue_level = config.last_used_issue_level
-
+        self._save_last_used_values_to_config()
         # TODO: Replace with validation -> Disbale button on errors
         # if not self.current_year or not self.current_month or not self.current_issue_level:
         #     QMessageBox.warning(self, 'Input Error', 'Please fill in all fields.')
         #     return
-        self._create_and_add_sankey()
+        self.sankey_generated = True
+        self.create_and_add_sankey()
 
     def get_html(self, content: str = '') -> str:
         """Get the HTML content with the given content."""
         return f'<html><body style="background-color: {self.theme_manager.get_colors()["background"]};">{content}</body></html>'
 
-    def _create_and_add_sankey(self):
-        if not self.current_year or not self.current_month or not self.current_issue_level:
-            return
+    def create_and_add_sankey(self):
+        """Create and add the Sankey diagram to the browser."""
+        fig_html: str = ''
+        if self.sankey_generated:
+            config: Config = self.config_service.config
+            current_year = config.last_used_year
+            current_month = config.last_used_month
+            current_issue_level = config.last_used_issue_level
+            if not current_year or not current_month or not current_issue_level:
+                # TODO: Replace with validation -> Disbale button on errors
+                return
 
-        fig_html = self._generate_sankey_html(
-            int(self.current_year), int(self.current_month), int(self.current_issue_level)
-        )
+            fig_html = self._generate_sankey_html(int(current_year), int(current_month), int(current_issue_level))
 
         # Save the HTML to a temporary file
         temp_file = 'temp_plot.html'

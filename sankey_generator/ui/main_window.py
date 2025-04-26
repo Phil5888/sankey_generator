@@ -34,16 +34,10 @@ class MainWindow(QMainWindow, Observer):
             if isinstance(args[0], QUrl):
                 # Update the browser with the new HTML content
                 self.diagram_browser.setUrl(args[0])
-            if args[0] == 'dark_mode':
+            if args[0] == 'theme':
                 # Update the theme
-                colors = self.controller.theme_manager.get_colors()
-                with open('theme.qss', 'r') as file:
-                    stylesheet = file.read().format(**colors)
-
-                self.setStyleSheet(stylesheet)
-                # BUG: This triggers the generation even if it was not generated before, or the user entered different values
-                # -> Use last values?
-                self.controller.on_submit()
+                self.setStyleSheet(self.controller.theme_manager.get_stylesheet())
+                self.controller.create_and_add_sankey()
         else:
             raise ValueError(f'Unknown observable: {observable}')
 
@@ -51,7 +45,7 @@ class MainWindow(QMainWindow, Observer):
         """Create the user interface."""
         self.setWindowTitle('Sankey Generator')
         self.setGeometry(100, 100, 800, 600)
-        self.controller.theme_manager.apply_theme(self)
+        self.setStyleSheet(self.controller.theme_manager.get_stylesheet())
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -68,23 +62,23 @@ class MainWindow(QMainWindow, Observer):
 
         # Year Input
         input_layout.addWidget(QLabel('Year'))
-        self.year_input = self._create_input_field('Year', self.config.last_used_year, self.controller.save_year)
+        self.year_input = self._create_input_field('Year', self.config.last_used_year, self.controller.set_year)
         input_layout.addWidget(self.year_input)
 
         # Month Input
         input_layout.addWidget(QLabel('Month'))
-        self.month_input = self._create_input_field('Month', self.config.last_used_month, self.controller.save_month)
+        self.month_input = self._create_input_field('Month', self.config.last_used_month, self.controller.set_month)
         input_layout.addWidget(self.month_input)
 
         # Issue Level Input
         input_layout.addWidget(QLabel('Issue Level'))
         self.issue_level_input = self._create_input_field(
-            'Issue Level', self.config.last_used_issue_level, self.controller.save_issue_level
+            'Issue Level', self.config.last_used_issue_level, self.controller.set_issue_level
         )
         input_layout.addWidget(self.issue_level_input)
 
         # Generate Button
-        self.generate_button = self._create_button('Start Sankey generation', self.controller.on_submit)
+        self.generate_button = self._create_button('Start Sankey generation', self.controller.on_generate_sankey)
         input_layout.addWidget(self.generate_button)
 
         # Dark Mode Switch
@@ -110,7 +104,7 @@ class MainWindow(QMainWindow, Observer):
         toggle_switch = AnimatedToggle()
         toggle_switch.setFixedSize(toggle_switch.sizeHint())
         toggle_switch.setChecked(self.config.dark_mode)
-        toggle_switch.stateChanged.connect(self.controller.toggle_theme)
+        toggle_switch.stateChanged.connect(self.controller.on_toggle_theme)
         return toggle_switch
 
     def _create_input_field(self, placeholder_text: str, default_value: str, save_func) -> QLineEdit:
