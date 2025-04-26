@@ -25,7 +25,6 @@ from sankey_generator.models.config import Config
 # - Add a way to select the issues data frame filters
 # - Add a way to select the income reference accounts
 # - Add a way to select the issues reference accounts
-# - Add a config file to save the settings
 # - Add budget indecator to sankey diagram
 # - Split income to reference accounts (Requires ignoring "Umbuchung" in the CSV)
 # - Add subcategories for fix costs and variable costs
