@@ -1,6 +1,6 @@
 """MainController for the Sankey Generator application."""
 
-from sankey_generator.models.theme_manager import ThemeManager
+from sankey_generator.services.theme_service import ThemeService
 from sankey_generator.models.config import Config
 from sankey_generator.services.config_service import ConfigService
 from sankey_generator.services.finanzguru_csv_parser_service import FinanzguruCsvParserService
@@ -24,7 +24,7 @@ class MainController(Observable):
         self.config_service: ConfigService = config_service
         self.finanzguru_parser_service: FinanzguruCsvParserService = parser_service
         self.sankey_plotter_service: SankeyPlotterService = plotter_service
-        self.theme_manager: ThemeManager = ThemeManager(config_service)
+        self.theme_manager: ThemeService = ThemeService(config_service)
         self.current_diagram_url: QUrl = None
         super().__init__()
 

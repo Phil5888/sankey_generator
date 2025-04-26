@@ -4,7 +4,7 @@ from sankey_generator.models.theme import Theme
 from sankey_generator.services.config_service import ConfigService
 
 
-class ThemeManager:
+class ThemeService:
     """Manager for handling theme-related logic."""
 
     def __init__(self, config_service):
@@ -14,7 +14,7 @@ class ThemeManager:
     def apply_theme(self, window):
         """Apply the current theme to the given window."""
         colors = Theme.get_colors()
-        with open('theme.qss', 'r') as file:
+        with open('sankey_generator/resources/theme.qss', 'r') as file:
             stylesheet = file.read().format(**colors)
         window.setStyleSheet(stylesheet)
 

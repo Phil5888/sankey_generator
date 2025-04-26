@@ -1,7 +1,7 @@
 """App startup."""
 
 from PyQt6.QtWidgets import QApplication
-from ui.main_window import MainWindow
+from sankey_generator.ui.main_window import MainWindow
 from sankey_generator.controllers.main_controller import MainController
 from sankey_generator.services.finanzguru_csv_parser_service import FinanzguruCsvParserService
 from sankey_generator.services.sankey_plotter_service import SankeyPlotterService

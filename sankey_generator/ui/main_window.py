@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtWebEngineWidgets import QWebEngineView
-from ui.animated_toggle import AnimatedToggle
+from sankey_generator.ui.animated_toggle import AnimatedToggle
 from sankey_generator.controllers.main_controller import MainController
 from PyQt6.QtWebEngineCore import QWebEngineProfile
 from sankey_generator.utils.observer import Observer
