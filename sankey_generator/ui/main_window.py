@@ -14,7 +14,7 @@ from PyQt6.QtWebEngineWidgets import QWebEngineView
 from sankey_generator.ui.animated_toggle import AnimatedToggle
 from sankey_generator.controllers.main_controller import MainController
 from PyQt6.QtWebEngineCore import QWebEngineProfile
-from sankey_generator.utils.observer import Observer
+from sankey_generator.utils.observer import Observer, ObserverKeys
 from PyQt6.QtCore import QUrl
 
 
@@ -31,12 +31,12 @@ class MainWindow(QMainWindow, Observer):
     def update(self, observable, *args, **kwargs):
         """Update method for the observer pattern."""
         if observable == self.controller:
-            if isinstance(args[0], QUrl):
+            if args[0] == ObserverKeys.SANKEY_GENERATED and isinstance(args[1], QUrl):
                 # Update the browser with the new HTML content
-                self.diagram_browser.setUrl(args[0])
-            if args[0] == 'theme':
+                self.diagram_browser.setUrl(args[1])
+            if args[0] == ObserverKeys.THEME_CHANGED and isinstance(args[1], str):
                 # Update the theme
-                self.setStyleSheet(self.controller.theme_manager.get_stylesheet())
+                self.setStyleSheet(args[1])
                 self.controller.create_and_add_sankey()
         else:
             raise ValueError(f'Unknown observable: {observable}')

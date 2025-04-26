@@ -7,7 +7,7 @@ from sankey_generator.services.finanzguru_csv_parser_service import FinanzguruCs
 from sankey_generator.services.sankey_plotter_service import SankeyPlotterService
 from PyQt6.QtWebEngineCore import QWebEngineDownloadRequest
 from PyQt6.QtCore import QDir, QUrl
-from sankey_generator.utils.observer import Observable
+from sankey_generator.utils.observer import Observable, ObserverKeys
 import os
 
 
@@ -55,7 +55,7 @@ class MainController(Observable):
     def on_toggle_theme(self):
         """Toggle the theme between dark and light mode."""
         self.theme_manager.toggle_theme()
-        self.notify_observers('theme')
+        self.notify_observers(ObserverKeys.THEME_CHANGED, self.theme_manager.get_stylesheet())
 
     def get_initial_html(self) -> str:
         """Get the initial HTML content for the browser."""
@@ -102,7 +102,7 @@ class MainController(Observable):
         # Load the file in WebView
         current_diagram_url: QUrl = QUrl.fromLocalFile(os.path.abspath(temp_file))
         # Notify observers about the new diagram URL
-        self.notify_observers(current_diagram_url)
+        self.notify_observers(ObserverKeys.SANKEY_GENERATED, current_diagram_url)
 
         print(
             f'Generating Sankey diagram for {self.current_year}-{self.current_month} with issue level {self.current_issue_level}'

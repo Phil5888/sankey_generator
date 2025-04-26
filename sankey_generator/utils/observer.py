@@ -1,6 +1,14 @@
 """Implementation for observer pattern."""
 
 
+class ObserverKeys:
+    """Keys for the observer pattern."""
+
+    THEME_CHANGED = 'theme'
+    SANKEY_GENERATED = 'sankey_generated'
+    OBSERVER_KEYS_MAIN_WINDOW = {THEME_CHANGED, SANKEY_GENERATED}
+
+
 class Observable:
     """Observable class to be used as a base class for any observable object."""
 
@@ -20,6 +28,8 @@ class Observable:
 
     def notify_observers(self, *args, **kwargs):
         """Notify all observers about an event."""
+        if args[0] not in ObserverKeys.OBSERVER_KEYS_MAIN_WINDOW:
+            raise ValueError(f'Unknown observable: {args[0]}')
         for observer in self.observers:
             observer.update(self, *args, **kwargs)
 
