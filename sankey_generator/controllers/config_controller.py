@@ -1,4 +1,5 @@
 from sankey_generator.models.config import Config
+from sankey_generator.models.key_value_item import KeyValueItem
 from sankey_generator.services.config_service import ConfigService
 from sankey_generator.utils.observer import Observable, ObserverKeys
 from sankey_generator.models.config import AccountSource, DataFrameFilter
@@ -25,15 +26,15 @@ class ConfigController(Observable):
         self.notify_observers(ObserverKeys.INFO_MESSAGE, 'Configuration saved successfully.')
         self.notify_observers(ObserverKeys.CLOSE_WINDOW)
 
-    def add_issues_filter(self, filter: str):
+    def add_issues_filter(self, filter: KeyValueItem):
         """Add a new issues filter."""
-        self.issues_data_frame_filters.append(filter)
+        self.issues_data_frame_filters.append(DataFrameFilter(filter.key, filter.value))
         self.notify_observers(ObserverKeys.ISSUES_FITLERS_CHANGED)
 
-    def edit_issues_filter(self, index: int, new_filter: str):
+    def edit_issues_filter(self, index: int, new_filter: KeyValueItem):
         """Edit an existing issues filter."""
         if 0 <= index < len(self.issues_data_frame_filters):
-            self.issues_data_frame_filters[index] = new_filter
+            self.issues_data_frame_filters[index] = DataFrameFilter(new_filter.key, new_filter.value)
             self.notify_observers(ObserverKeys.ISSUES_FITLERS_CHANGED)
         else:
             self.notify_observers(ObserverKeys.ERROR_MESSAGE, 'Invalid index for issues filter.')
@@ -46,15 +47,15 @@ class ConfigController(Observable):
         else:
             self.notify_observers(ObserverKeys.ERROR_MESSAGE, 'Invalid index for issues filter.')
 
-    def add_income_filter(self, filter: str):
+    def add_income_filter(self, filter: KeyValueItem):
         """Add a new income filter."""
-        self.income_data_frame_filters.append(filter)
+        self.income_data_frame_filters.append(DataFrameFilter(filter.key, filter.value))
         self.notify_observers(ObserverKeys.INCOME_FITLERS_CHANGED)
 
-    def edit_income_filter(self, index: int, new_filter: str):
+    def edit_income_filter(self, index: int, new_filter: KeyValueItem):
         """Edit an existing income filter."""
         if 0 <= index < len(self.income_data_frame_filters):
-            self.income_data_frame_filters[index] = new_filter
+            self.income_data_frame_filters[index] = DataFrameFilter(new_filter.key, new_filter.value)
             self.notify_observers(ObserverKeys.INCOME_FITLERS_CHANGED)
         else:
             self.notify_observers(ObserverKeys.ERROR_MESSAGE, 'Invalid index for income filter.')
@@ -67,9 +68,9 @@ class ConfigController(Observable):
         else:
             self.notify_observers(ObserverKeys.ERROR_MESSAGE, 'Invalid index for income filter.')
 
-    def add_income_reference_account(self, account: AccountSource):
+    def add_income_reference_account(self, account: KeyValueItem):
         """Add a new income reference account."""
-        self.income_reference_accounts.append(account)
+        self.income_reference_accounts.append(AccountSource(account.key, account.value))
         self.notify_observers(ObserverKeys.INCOME_REFERENCE_ACCOUNTS_CHANGED)
 
     def delete_income_reference_account(self, index: int):
@@ -80,10 +81,10 @@ class ConfigController(Observable):
         else:
             self.notify_observers(ObserverKeys.ERROR_MESSAGE, 'Invalid index for income reference account.')
 
-    def edit_income_reference_account(self, index: int, account: AccountSource):
+    def edit_income_reference_account(self, index: int, account: KeyValueItem):
         """Edit an existing income reference account."""
         if 0 <= index < len(self.income_reference_accounts):
-            self.income_reference_accounts[index] = account
+            self.income_reference_accounts[index] = AccountSource(account.key, account.value)
             self.notify_observers(ObserverKeys.INCOME_REFERENCE_ACCOUNTS_CHANGED)
         else:
             self.notify_observers(ObserverKeys.ERROR_MESSAGE, 'Invalid index for income reference account.')

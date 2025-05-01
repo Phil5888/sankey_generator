@@ -11,9 +11,10 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QWidget,
 )
-from sankey_generator.ui.filter_dialog import FilterDialog
+from sankey_generator.ui.filter_dialog import KeyValueItemDialog
 from sankey_generator.ui.ui_observable_base_window import UiObservableBaseWindow
 from sankey_generator.models.config import AccountSource, DataFrameFilter
+from sankey_generator.models.key_value_item import KeyValueItem
 from sankey_generator.controllers.config_controller import ConfigController
 from sankey_generator.utils.observer import ObserverKeys
 
@@ -40,6 +41,8 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
                 self.load_filters(self.issues_filter_list_widget, self.controller.issues_data_frame_filters)
             elif args[0] == ObserverKeys.INCOME_FITLERS_CHANGED:
                 self.load_filters(self.income_filter_list_widget, self.controller.income_data_frame_filters)
+            elif args[0] == ObserverKeys.INCOME_REFERENCE_ACCOUNTS_CHANGED:
+                self.load_income_accounts()
 
         else:
             raise ValueError(f'Unknown observable: {observable}')
@@ -83,6 +86,7 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
         )
 
         self.init_income_accounts_tab()
+        self.load_income_accounts()
 
         # Save and Cancel buttons
         button_layout = QHBoxLayout()
@@ -130,7 +134,6 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
         tab_layout = QVBoxLayout()
 
         self.income_accounts_list = QListWidget(self)
-        self.load_income_accounts()
         tab_layout.addWidget(self.income_accounts_list)
 
         button_layout = QHBoxLayout()
@@ -163,22 +166,31 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
         self.income_accounts_list.clear()
         account: AccountSource = None
         for account in self.controller.income_reference_accounts:
-            self.income_accounts_list.addItem(f'{account.account_name} ({account.iban})')
+            self.income_accounts_list.addItem(f'{account.account_name}: {", ".join(account.iban)}')
 
     def add_issues_filter(self):
         """Add a new issues filter."""
-        self._add_filter('Add issues filter', 'Column name', 'Column value', self.controller.add_issues_filter)
+        self._add_item('Add issues filter', 'Column name', 'Column value', self.controller.add_issues_filter)
 
     def add_income_filter(self):
         """Add a new income filter."""
-        self._add_filter('Add income filter', 'Column name', 'Column value', self.controller.add_income_filter)
+        self._add_item('Add income filter', 'Column name', 'Column value', self.controller.add_income_filter)
 
-    def _add_filter(self, window_title: str, key_string: str, value_string: str, add_filter_func):
-        """Add a new filter."""
-        dialog = FilterDialog(self, window_title, key_string, value_string)
+    def add_income_account(self):
+        """Add a new income reference account."""
+        self._add_item(
+            'Add income account',
+            'Account name',
+            'IBAN',
+            self.controller.add_income_reference_account,
+        )
+
+    def _add_item(self, window_title: str, key_string: str, value_string: str, add_filter_func):
+        """Add a new item."""
+        dialog = KeyValueItemDialog(self, window_title, key_string, value_string)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            new_filter = dialog.get_filter()
-            add_filter_func(new_filter)
+            new_item: KeyValueItem = dialog.get_item()
+            add_filter_func(new_item)
 
     def edit_issues_filter(self):
         """Edit the selected issues filter."""
@@ -202,71 +214,94 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
             self.controller.income_data_frame_filters,
         )
 
+    def edit_income_account(self):
+        """Edit the selected income reference account."""
+        self._edit_filter(
+            'Edit income account',
+            'Account name',
+            'IBAN',
+            self.controller.edit_income_reference_account,
+            self.income_accounts_list,
+            self.controller.income_reference_accounts,
+        )
+
     def _edit_filter(
         self,
         window_title: str,
         key_string: str,
         value_string: str,
         update_func,
-        filter_list_widget: QListWidget,
+        item_list_widget: QListWidget,
         filter_list: list[DataFrameFilter],
     ):
-        """Edit the selected filter."""
-        selected_item = filter_list_widget.currentRow()
+        """Edit the selected item."""
+        selected_item = item_list_widget.currentRow()
         if selected_item < 0:
             QMessageBox.warning(self, 'No Selection', 'Please select a filter to edit.')
             return
 
         current_filter = filter_list[selected_item]
-        dialog = FilterDialog(self, window_title, key_string, value_string, current_filter)
+        if isinstance(current_filter, AccountSource):
+            key_value_item = KeyValueItem(current_filter.account_name, current_filter.iban)
+        elif isinstance(current_filter, DataFrameFilter):
+            key_value_item = KeyValueItem(current_filter.csv_column_name, current_filter.csv_value_filters)
+        else:
+            QMessageBox.warning(self, 'Invalid Selection', 'Selected item is not a valid filter.')
+            return
+
+        dialog = KeyValueItemDialog(self, window_title, key_string, value_string, key_value_item)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            updated_filter = dialog.get_filter()
-            update_func(selected_item, updated_filter)
+            updated_item: KeyValueItem = dialog.get_item()
+            update_func(selected_item, updated_item)
 
     def delete_issues_filter(self):
         """Delete the selected issues filter."""
-        self._delete_filter(self.controller.delete_issues_filter, self.issues_filter_list_widget)
+        self._delete_item(self.controller.delete_issues_filter, self.issues_filter_list_widget)
 
     def delete_income_filter(self):
         """Delete the selected income filter."""
-        self._delete_filter(self.controller.delete_income_filter, self.income_filter_list_widget)
+        self._delete_item(self.controller.delete_income_filter, self.income_filter_list_widget)
 
-    def _delete_filter(self, delete_func, filter_list_widget: QListWidget):
-        """Delete the selected filter."""
+    def delete_income_account(self):
+        """Delete the selected income reference account."""
+        self._delete_item(self.controller.delete_income_reference_account, self.income_accounts_list)
+
+    def _delete_item(self, delete_func, filter_list_widget: QListWidget):
+        """Delete the selected item."""
         selected_item = filter_list_widget.currentRow()
         if selected_item < 0:
             QMessageBox.warning(self, 'No Selection', 'Please select a filter to delete.')
             return
         delete_func(selected_item)
 
-    def add_income_account(self):
-        """Add a new income reference account."""
-        account_name, iban = self.get_account_details()
-        if account_name and iban:
-            self.controller.income_reference_accounts.append(AccountSource(account_name, iban))
-            self.load_income_accounts()
+    # def add_income_account(self):
+    #     """Add a new income reference account."""
+    #     account_name, iban = self.get_account_details()
+    #     if account_name and iban:
+    #         self.controller.income_reference_accounts.append(AccountSource(account_name, iban))
+    #         self.load_income_accounts()
 
-    def edit_income_account(self):
-        """Edit the selected income reference account."""
-        selected_item = self.income_accounts_list.currentRow()
-        if selected_item < 0:
-            QMessageBox.warning(self, 'No Selection', 'Please select an account to edit.')
-            return
+    # def edit_income_account(self):
+    #     """Edit the selected income reference account."""
+    #     selected_item = self.income_accounts_list.currentRow()
+    #     if selected_item < 0:
+    #         QMessageBox.warning(self, 'No Selection', 'Please select an account to edit.')
+    #         return
 
-        current_account = self.controller.income_reference_accounts[selected_item]
-        account_name, iban = self.get_account_details(current_account)
-        if account_name and iban:
-            self.controller.income_reference_accounts[selected_item] = AccountSource(account_name, iban)
-            self.load_income_accounts()
+    #     current_account = self.controller.income_reference_accounts[selected_item]
+    #     account_name, iban = self.get_account_details(current_account)
+    #     if account_name and iban:
+    #         self.controller.income_reference_accounts[selected_item] = AccountSource(account_name, iban)
+    #         self.load_income_accounts()
 
-    def delete_income_account(self):
-        """Delete the selected income reference account."""
-        selected_item = self.income_accounts_list.currentRow()
-        if selected_item < 0:
-            QMessageBox.warning(self, 'No Selection', 'Please select an account to delete.')
-            return
+    # def delete_income_account(self):
+    #     """Delete the selected income reference account."""
+    #     selected_item = self.income_accounts_list.currentRow()
+    #     if selected_item < 0:
+    #         QMessageBox.warning(self, 'No Selection', 'Please select an account to delete.')
+    #         return
 
-        self.controller.delete_income_reference_account(selected_item)
+    #     self.controller.delete_income_reference_account(selected_item)
 
     def save_changes(self):
         """Save changes to the config."""
