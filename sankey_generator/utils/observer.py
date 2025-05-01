@@ -8,12 +8,17 @@ class ObserverKeys:
     SANKEY_GENERATED = 'sankey_generated'
     OBSERVER_KEYS_MAIN_WINDOW = {THEME_CHANGED, SANKEY_GENERATED}
 
+    ISSUES_FITLERS_CHANGED = 'issues_filters_changed'
+    INCOME_FITLERS_CHANGED = 'income_filters_changed'
+    INCOME_REFERENCE_ACCOUNTS_CHANGED = 'income_reference_accounts_changed'
+    OBSERVER_KEYS_CONFIG_WINDOW = {ISSUES_FITLERS_CHANGED, INCOME_FITLERS_CHANGED, INCOME_REFERENCE_ACCOUNTS_CHANGED}
+
     INFO_MESSAGE = 'info_message'
     ERROR_MESSAGE = 'error_message'
     OBSERVER_KEYS_MESSAGE_BOX = {INFO_MESSAGE, ERROR_MESSAGE}
 
     CLOSE_WINDOW = 'close_window'
-    OBSERVER_KEAYS_WINDOW = {CLOSE_WINDOW}
+    OBSERVER_KEYS_WINDOW = {CLOSE_WINDOW}
 
 
 class Observable:
@@ -38,7 +43,8 @@ class Observable:
         if (
             args[0] not in ObserverKeys.OBSERVER_KEYS_MAIN_WINDOW
             and args[0] not in ObserverKeys.OBSERVER_KEYS_MESSAGE_BOX
-            and args[0] not in ObserverKeys.OBSERVER_KEAYS_WINDOW
+            and args[0] not in ObserverKeys.OBSERVER_KEYS_WINDOW
+            and args[0] not in ObserverKeys.OBSERVER_KEYS_CONFIG_WINDOW
         ):
             raise ValueError(f'Unknown observable: {args[0]}')
         for observer in self.observers:

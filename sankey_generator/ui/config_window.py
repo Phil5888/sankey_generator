@@ -36,6 +36,10 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
         if observable == self.controller:
             if args[0] == ObserverKeys.CLOSE_WINDOW:
                 self.close()
+            elif args[0] == ObserverKeys.ISSUES_FITLERS_CHANGED:
+                self.load_filters(self.issues_filter_list_widget, self.controller.issues_data_frame_filters)
+            elif args[0] == ObserverKeys.INCOME_FITLERS_CHANGED:
+                self.load_filters(self.income_filter_list_widget, self.controller.income_data_frame_filters)
 
         else:
             raise ValueError(f'Unknown observable: {observable}')
@@ -60,7 +64,10 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
             self.edit_issues_filter,
             self.delete_issues_filter,
         )
-        self.load_issues_filters()
+        self.load_filters(
+            self.issues_filter_list_widget,
+            self.controller.issues_data_frame_filters,
+        )
 
         self.income_filter_list_widget = QListWidget(self)
         self.income_filter_tab = self.init_filter_tab(
@@ -70,7 +77,10 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
             self.edit_income_filter,
             self.delete_income_filter,
         )
-        self.load_income_filters()
+        self.load_filters(
+            self.income_filter_list_widget,
+            self.controller.income_data_frame_filters,
+        )
 
         # self.init_income_filters_tab()
         self.init_income_accounts_tab()
@@ -138,20 +148,12 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
         self.income_accounts_tab.setLayout(tab_layout)
         self.tab_widget.addTab(self.income_accounts_tab, 'Income Accounts')
 
-    def load_issues_filters(self):
-        """Load issues filters into the list widget."""
-        self.issues_filter_list_widget.clear()
-        filter: DataFrameFilter = None
-        for filter in self.controller.issues_data_frame_filters:
-            self.issues_filter_list_widget.addItem(f'{filter.csv_column_name}: {", ".join(filter.csv_value_filters)}')
-
-    # TBD: Remove duplicate code
-    def load_income_filters(self):
+    def load_filters(self, filter_list_widget: QListWidget, filters: list[DataFrameFilter]):
         """Load income filters into the list widget."""
-        self.income_filter_list_widget.clear()
+        filter_list_widget.clear()
         filter: DataFrameFilter = None
-        for filter in self.controller.income_data_frame_filters:
-            self.income_filter_list_widget.addItem(f'{filter.csv_column_name}: {", ".join(filter.csv_value_filters)}')
+        for filter in filters:
+            filter_list_widget.addItem(f'{filter.csv_column_name}: {", ".join(filter.csv_value_filters)}')
 
     def load_income_accounts(self):
         """Load income reference accounts into the list widget."""
@@ -162,67 +164,63 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
 
     def add_issues_filter(self):
         """Add a new issues filter."""
-        dialog = FilterDialog(self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            new_filter = dialog.get_filter()
-            self.controller.issues_data_frame_filters.append(new_filter)
-            self.load_issues_filters()
-
-    def edit_issues_filter(self):
-        """Edit the selected issues filter."""
-        selected_item = self.issues_filter_list_widget.currentRow()
-        if selected_item < 0:
-            QMessageBox.warning(self, 'No Selection', 'Please select a filter to edit.')
-            return
-
-        current_filter = self.controller.issues_data_frame_filters[selected_item]
-        dialog = FilterDialog(self, current_filter)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            updated_filter = dialog.get_filter()
-            self.controller.issues_data_frame_filters[selected_item] = updated_filter
-            self.load_issues_filters()
-
-    def delete_issues_filter(self):
-        """Delete the selected issues filter."""
-        selected_item = self.issues_filter_list_widget.currentRow()
-        if selected_item < 0:
-            QMessageBox.warning(self, 'No Selection', 'Please select a filter to delete.')
-            return
-
-        del self.controller.issues_data_frame_filters[selected_item]
-        self.load_issues_filters()
+        self._add_filter(self.controller.add_issues_filter)
 
     def add_income_filter(self):
         """Add a new income filter."""
+        self._add_filter(self.controller.add_income_filter)
+
+    def _add_filter(self, add_filter_func):
+        """Add a new filter."""
         dialog = FilterDialog(self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             new_filter = dialog.get_filter()
-            self.controller.income_data_frame_filters.append(new_filter)
-            self.load_income_filters()
+            add_filter_func(new_filter)
+
+    def edit_issues_filter(self):
+        """Edit the selected issues filter."""
+        self._edit_filter(
+            self.controller.edit_issues_filter,
+            self.issues_filter_list_widget,
+            self.controller.issues_data_frame_filters,
+        )
 
     def edit_income_filter(self):
         """Edit the selected income filter."""
-        selected_item = self.income_filter_list_widget.currentRow()
+        self._edit_filter(
+            self.controller.edit_income_filter,
+            self.income_filter_list_widget,
+            self.controller.income_data_frame_filters,
+        )
+
+    def _edit_filter(self, update_func, filter_list_widget: QListWidget, filter_list: list[DataFrameFilter]):
+        """Edit the selected filter."""
+        selected_item = filter_list_widget.currentRow()
         if selected_item < 0:
             QMessageBox.warning(self, 'No Selection', 'Please select a filter to edit.')
             return
 
-        current_filter = self.controller.income_data_frame_filters[selected_item]
+        current_filter = filter_list[selected_item]
         dialog = FilterDialog(self, current_filter)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             updated_filter = dialog.get_filter()
-            self.controller.income_data_frame_filters[selected_item] = updated_filter
-            self.load_income_filters()
+            update_func(selected_item, updated_filter)
+
+    def delete_issues_filter(self):
+        """Delete the selected issues filter."""
+        self._delete_filter(self.controller.delete_issues_filter, self.issues_filter_list_widget)
 
     def delete_income_filter(self):
         """Delete the selected income filter."""
-        selected_item = self.income_filter_list_widget.currentRow()
+        self._delete_filter(self.controller.delete_income_filter, self.income_filter_list_widget)
+
+    def _delete_filter(self, delete_func, filter_list_widget: QListWidget):
+        """Delete the selected filter."""
+        selected_item = filter_list_widget.currentRow()
         if selected_item < 0:
             QMessageBox.warning(self, 'No Selection', 'Please select a filter to delete.')
             return
-
-        del self.controller.income_data_frame_filters[selected_item]
-        self.load_income_filters()
+        delete_func(selected_item)
 
     def add_income_account(self):
         """Add a new income reference account."""
