@@ -123,7 +123,7 @@ class Config:
             'income_reference_accounts': [account.to_dict() for account in self.income_reference_accounts],
             'income_data_frame_filters': [filter.to_dict() for filter in self.income_data_frame_filters],
             'issues_data_frame_filters': [filter.to_dict() for filter in self.issues_data_frame_filters],
-            'issues_hierarchy': self.issues_hierarchy.to_dict(),
+            'issues_hierarchy': [self.issues_hierarchy.to_dict()] if self.issues_hierarchy else None,
             'income_node_name': self.income_node_name,
             'not_used_income_name': self.not_used_income_name,
             'analysis_year_column_name': self.analysis_year_column_name,

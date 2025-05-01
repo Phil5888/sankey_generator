@@ -2,6 +2,7 @@
 
 import json
 from sankey_generator.models.config import Config, DataFrameFilter, AccountSource, IssueCategory, IncomeFilter
+import os
 
 
 class ConfigService:
@@ -9,6 +10,30 @@ class ConfigService:
 
     def __init__(self, config_file):
         """Initialize the configuration data."""
+        # chek if the config file exists
+        if not os.path.exists(config_file):
+            # create a default config file
+            default_config = {
+                'input_file': '',
+                'output_file': '',
+                'income_reference_accounts': [],
+                'income_data_frame_filters': [],
+                'issues_data_frame_filters': [],
+                'issues_hierarchy': [],
+                'income_node_name': '',
+                'not_used_income_name': '',
+                'analysis_year_column_name': '',
+                'analysis_month_column_name': '',
+                'amount_out_name': '',
+                'other_income_name': '',
+                'last_used_month': 0,
+                'last_used_year': 0,
+                'last_used_issue_level': 0,
+                'dark_mode': False,
+            }
+            with open(config_file, 'w') as file:
+                json.dump(default_config, file, indent=4)
+
         with open(config_file, 'r') as file:
             config_data = json.load(file)
 
@@ -54,7 +79,7 @@ class ConfigService:
 
     def _parseIssuesHierarchy(self, issues_hierarchy: list[dict]) -> IssueCategory:
         """Create the issues hierarchy from the config file."""
-        if issues_hierarchy is None:
+        if issues_hierarchy is None or len(issues_hierarchy) == 0:
             return None
         issue_category = IssueCategory(issues_hierarchy['csv_column_name'])
         sub_category = issues_hierarchy.get('sub_category')
