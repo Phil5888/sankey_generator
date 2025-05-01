@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (
 )
 from sankey_generator.ui.filter_dialog import FilterDialog
 from sankey_generator.ui.ui_observable_base_window import UiObservableBaseWindow
+from sankey_generator.models.config import AccountSource
 
 
 class ConfigWindow(QDialog, UiObservableBaseWindow):
@@ -21,6 +22,7 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
     def __init__(self, config_service):
         """Initialize the configuration window."""
         super().__init__()
+        # self.controller: ConfigController = controller
         self.config_service = config_service
         self.config = config_service.config
         self.setWindowTitle('Configuration')
@@ -39,8 +41,27 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
         layout.addWidget(self.tab_widget)
 
         # Add tabs
-        self.init_issues_tab()
-        self.init_income_filters_tab()
+        self.issues_filter_list_widget = QListWidget(self)
+        self.issues_filter_tab = self.init_filter_tab(
+            self.issues_filter_list_widget,
+            'issues filter',
+            self.add_issues_filter,
+            self.edit_issues_filter,
+            self.delete_issues_filter,
+        )
+        self.load_issues_filters()
+
+        self.income_filter_list_widget = QListWidget(self)
+        self.income_filter_tab = self.init_filter_tab(
+            self.income_filter_list_widget,
+            'income filters',
+            self.add_income_filter,
+            self.edit_income_filter,
+            self.delete_income_filter,
+        )
+        self.load_income_filters()
+
+        # self.init_income_filters_tab()
         self.init_income_accounts_tab()
 
         # Save and Cancel buttons
@@ -57,59 +78,31 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
         layout.addLayout(button_layout)
         self.setLayout(layout)
 
-    def init_issues_tab(self):
+    def init_filter_tab(self, filter_list_widget: QListWidget, title: str, add_func, edit_func, delete_func) -> QWidget:
         """Initialize the Issues Data Frame Filters tab."""
-        self.issues_tab = QWidget()
+        filter_tab = QWidget()
         tab_layout = QVBoxLayout()
 
-        self.issues_filter_list = QListWidget(self)
-        self.load_issues_filters()
-        tab_layout.addWidget(self.issues_filter_list)
+        tab_layout.addWidget(filter_list_widget)
 
         button_layout = QHBoxLayout()
 
         add_button = QPushButton('Add Filter', self)
-        add_button.clicked.connect(self.add_issues_filter)
+        add_button.clicked.connect(add_func)
         button_layout.addWidget(add_button)
 
         edit_button = QPushButton('Edit Filter', self)
-        edit_button.clicked.connect(self.edit_issues_filter)
+        edit_button.clicked.connect(edit_func)
         button_layout.addWidget(edit_button)
 
         delete_button = QPushButton('Delete Filter', self)
-        delete_button.clicked.connect(self.delete_issues_filter)
+        delete_button.clicked.connect(delete_func)
         button_layout.addWidget(delete_button)
 
         tab_layout.addLayout(button_layout)
-        self.issues_tab.setLayout(tab_layout)
-        self.tab_widget.addTab(self.issues_tab, 'Issues Filters')
-
-    def init_income_filters_tab(self):
-        """Initialize the Income Data Frame Filters tab."""
-        self.income_filters_tab = QWidget()
-        tab_layout = QVBoxLayout()
-
-        self.income_filter_list = QListWidget(self)
-        self.load_income_filters()
-        tab_layout.addWidget(self.income_filter_list)
-
-        button_layout = QHBoxLayout()
-
-        add_button = QPushButton('Add Filter', self)
-        add_button.clicked.connect(self.add_income_filter)
-        button_layout.addWidget(add_button)
-
-        edit_button = QPushButton('Edit Filter', self)
-        edit_button.clicked.connect(self.edit_income_filter)
-        button_layout.addWidget(edit_button)
-
-        delete_button = QPushButton('Delete Filter', self)
-        delete_button.clicked.connect(self.delete_income_filter)
-        button_layout.addWidget(delete_button)
-
-        tab_layout.addLayout(button_layout)
-        self.income_filters_tab.setLayout(tab_layout)
-        self.tab_widget.addTab(self.income_filters_tab, 'Income Filters')
+        filter_tab.setLayout(tab_layout)
+        self.tab_widget.addTab(filter_tab, title)
+        return filter_tab
 
     def init_income_accounts_tab(self):
         """Initialize the Income Reference Accounts tab."""
@@ -136,17 +129,17 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
 
     def load_issues_filters(self):
         """Load issues filters into the list widget."""
-        self.issues_filter_list.clear()
+        self.issues_filter_list_widget.clear()
         for filter_item in self.config.issues_data_frame_filters:
-            self.issues_filter_list.addItem(
+            self.issues_filter_list_widget.addItem(
                 f'{filter_item.csv_column_name}: {", ".join(filter_item.csv_value_filters)}'
             )
 
     def load_income_filters(self):
         """Load income filters into the list widget."""
-        self.income_filter_list.clear()
+        self.income_filter_list_widget.clear()
         for filter_item in self.config.income_data_frame_filters:
-            self.income_filter_list.addItem(
+            self.income_filter_list_widget.addItem(
                 f'{filter_item.csv_column_name}: {", ".join(filter_item.csv_value_filters)}'
             )
 
@@ -166,7 +159,7 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
 
     def edit_issues_filter(self):
         """Edit the selected issues filter."""
-        selected_item = self.issues_filter_list.currentRow()
+        selected_item = self.filter_list_widgets.currentRow()
         if selected_item < 0:
             QMessageBox.warning(self, 'No Selection', 'Please select a filter to edit.')
             return
@@ -180,7 +173,7 @@ class ConfigWindow(QDialog, UiObservableBaseWindow):
 
     def delete_issues_filter(self):
         """Delete the selected issues filter."""
-        selected_item = self.issues_filter_list.currentRow()
+        selected_item = self.filter_list_widgets.currentRow()
         if selected_item < 0:
             QMessageBox.warning(self, 'No Selection', 'Please select a filter to delete.')
             return
