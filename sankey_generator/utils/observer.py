@@ -8,6 +8,10 @@ class ObserverKeys:
     SANKEY_GENERATED = 'sankey_generated'
     OBSERVER_KEYS_MAIN_WINDOW = {THEME_CHANGED, SANKEY_GENERATED}
 
+    INFO_MESSAGE = 'info_message'
+    ERROR_MESSAGE = 'error_message'
+    OBSERVER_KEYS_MESSAGE_BOX = {INFO_MESSAGE, ERROR_MESSAGE}
+
 
 class Observable:
     """Observable class to be used as a base class for any observable object."""
@@ -28,7 +32,10 @@ class Observable:
 
     def notify_observers(self, *args, **kwargs):
         """Notify all observers about an event."""
-        if args[0] not in ObserverKeys.OBSERVER_KEYS_MAIN_WINDOW:
+        if (
+            args[0] not in ObserverKeys.OBSERVER_KEYS_MAIN_WINDOW
+            and args[0] not in ObserverKeys.OBSERVER_KEYS_MESSAGE_BOX
+        ):
             raise ValueError(f'Unknown observable: {args[0]}')
         for observer in self.observers:
             observer.update(self, *args, **kwargs)

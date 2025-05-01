@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QLabel,
     QHBoxLayout,
+    QMessageBox,
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtWebEngineWidgets import QWebEngineView
@@ -35,10 +36,17 @@ class MainWindow(QMainWindow, Observer):
             if args[0] == ObserverKeys.SANKEY_GENERATED and isinstance(args[1], QUrl):
                 # Update the browser with the new HTML content
                 self.diagram_browser.setUrl(args[1])
-            if args[0] == ObserverKeys.THEME_CHANGED and isinstance(args[1], str):
+            elif args[0] == ObserverKeys.THEME_CHANGED and isinstance(args[1], str):
                 # Update the theme
                 self.setStyleSheet(args[1])
                 self.controller.create_and_add_sankey()
+            elif args[0] == ObserverKeys.INFO_MESSAGE and isinstance(args[1], str):
+                # Show an info message
+                QMessageBox.information(self, 'Info', args[1])
+            elif args[0] == ObserverKeys.ERROR_MESSAGE and isinstance(args[1], str):
+                # Show an error message
+                QMessageBox.critical(self, 'Error', args[1])
+
         else:
             raise ValueError(f'Unknown observable: {observable}')
 
