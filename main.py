@@ -26,6 +26,7 @@ from sankey_generator.models.config import Config
 # - Add a way to select the income reference accounts
 # - Add a way to select the issues reference accounts
 # - Add budget indecator to sankey diagram
+# - Config: Use "income reference accounts" instead of "referenzkonto" filter
 # - Split income to reference accounts (Requires ignoring "Umbuchung" in the CSV)
 # - Add subcategories for fix costs and variable costs
 # - Create a diagramm only for fix costs and variable costs

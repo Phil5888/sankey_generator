@@ -16,6 +16,7 @@ from sankey_generator.controllers.main_controller import MainController
 from PyQt6.QtWebEngineCore import QWebEngineProfile
 from sankey_generator.utils.observer import Observer, ObserverKeys
 from PyQt6.QtCore import QUrl
+from sankey_generator.ui.config_window import ConfigWindow
 
 
 class MainWindow(QMainWindow, Observer):
@@ -90,6 +91,11 @@ class MainWindow(QMainWindow, Observer):
         horizontal_layout.addWidget(self.toggle_switch)
         input_layout.addLayout(horizontal_layout)
 
+        # Add a button to open the Config Window
+        config_button = QPushButton('Configure Filters', self)
+        config_button.clicked.connect(self.open_config_window)
+        self.layout.addWidget(config_button)
+
         # Add input layout to the main layout
         self.layout.addLayout(input_layout, stretch=1)
 
@@ -131,3 +137,8 @@ class MainWindow(QMainWindow, Observer):
         browser.setHtml(self.controller.get_html())
 
         return browser
+
+    def open_config_window(self):
+        """Open the configuration window."""
+        config_window = ConfigWindow(self.controller.config_service)
+        config_window.exec()
