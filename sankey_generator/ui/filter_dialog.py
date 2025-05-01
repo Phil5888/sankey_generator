@@ -1,8 +1,10 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QPushButton, QMessageBox
 from sankey_generator.models.config import DataFrameFilter
 
+from sankey_generator.ui.ui_observable_base_window import UiObservableBaseWindow
 
-class FilterDialog(QDialog):
+
+class FilterDialog(QDialog, UiObservableBaseWindow):
     """Dialog for adding or editing a filter."""
 
     def __init__(self, parent, filter_item=None):

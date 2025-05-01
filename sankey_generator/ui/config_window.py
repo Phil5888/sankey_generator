@@ -12,9 +12,10 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 from sankey_generator.ui.filter_dialog import FilterDialog
+from sankey_generator.ui.ui_observable_base_window import UiObservableBaseWindow
 
 
-class ConfigWindow(QDialog):
+class ConfigWindow(QDialog, UiObservableBaseWindow):
     """Configuration window for editing config values."""
 
     def __init__(self, config_service):
