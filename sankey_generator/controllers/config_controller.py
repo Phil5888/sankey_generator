@@ -1,6 +1,7 @@
 from sankey_generator.models.config import Config
 from sankey_generator.services.config_service import ConfigService
 from sankey_generator.utils.observer import Observable, ObserverKeys
+from sankey_generator.models.config import AccountSource, DataFrameFilter
 
 
 class ConfigController(Observable):
@@ -12,9 +13,9 @@ class ConfigController(Observable):
         self.config_service: ConfigService = config_service
         config: Config = config_service.config
         # TODO: Work with copies here to avoid modifying the original config until save
-        self.income_reference_accounts: list = config.income_reference_accounts
-        self.issues_data_frame_filters: list = config.issues_data_frame_filters
-        self.income_data_frame_filters: list = config.income_data_frame_filters
+        self.income_reference_accounts: list[AccountSource] = config.income_reference_accounts
+        self.issues_data_frame_filters: list[DataFrameFilter] = config.issues_data_frame_filters
+        self.income_data_frame_filters: list[DataFrameFilter] = config.income_data_frame_filters
 
     def save_config(self):
         """Save changes to the config."""
@@ -65,3 +66,24 @@ class ConfigController(Observable):
             self.notify_observers(ObserverKeys.INCOME_FITLERS_CHANGED)
         else:
             self.notify_observers(ObserverKeys.ERROR_MESSAGE, 'Invalid index for income filter.')
+
+    def add_income_reference_account(self, account: AccountSource):
+        """Add a new income reference account."""
+        self.income_reference_accounts.append(account)
+        self.notify_observers(ObserverKeys.INCOME_REFERENCE_ACCOUNTS_CHANGED)
+
+    def delete_income_reference_account(self, index: int):
+        """Delete an existing income reference account."""
+        if 0 <= index < len(self.income_reference_accounts):
+            del self.income_reference_accounts[index]
+            self.notify_observers(ObserverKeys.INCOME_REFERENCE_ACCOUNTS_CHANGED)
+        else:
+            self.notify_observers(ObserverKeys.ERROR_MESSAGE, 'Invalid index for income reference account.')
+
+    def edit_income_reference_account(self, index: int, account: AccountSource):
+        """Edit an existing income reference account."""
+        if 0 <= index < len(self.income_reference_accounts):
+            self.income_reference_accounts[index] = account
+            self.notify_observers(ObserverKeys.INCOME_REFERENCE_ACCOUNTS_CHANGED)
+        else:
+            self.notify_observers(ObserverKeys.ERROR_MESSAGE, 'Invalid index for income reference account.')
