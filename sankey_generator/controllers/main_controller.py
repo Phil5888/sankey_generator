@@ -107,6 +107,7 @@ class MainController(Observable):
         print(
             f'Generating Sankey diagram for {self.current_year}-{self.current_month} with issue level {self.current_issue_level}'
         )
+        self.notify_observers(ObserverKeys.INFO_MESSAGE, 'Sankey diagram generated successfully.')
 
     def _generate_sankey_html(self, year, month, issue_level) -> str:
         """Generate the Sankey diagram for the given year, month and issue level."""

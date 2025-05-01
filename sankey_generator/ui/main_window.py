@@ -8,12 +8,12 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QLabel,
     QHBoxLayout,
-    QMessageBox,
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from sankey_generator.ui.animated_toggle import AnimatedToggle
 from sankey_generator.controllers.main_controller import MainController
+from sankey_generator.controllers.config_controller import ConfigController
 from PyQt6.QtWebEngineCore import QWebEngineProfile
 from sankey_generator.utils.observer import ObserverKeys
 from PyQt6.QtCore import QUrl
@@ -31,8 +31,9 @@ class MainWindow(QMainWindow, UiObservableBaseWindow):
         self.config = controller.config_service.config
         self._init_ui()
 
-    def update(self, observable, *args, **kwargs):
+    def updateObservable(self, observable, *args, **kwargs):
         """Update method for the observer pattern."""
+        super().updateObservable(observable, *args, **kwargs)
         if observable == self.controller:
             if args[0] == ObserverKeys.SANKEY_GENERATED and isinstance(args[1], QUrl):
                 # Update the browser with the new HTML content
@@ -41,13 +42,6 @@ class MainWindow(QMainWindow, UiObservableBaseWindow):
                 # Update the theme
                 self.setStyleSheet(args[1])
                 self.controller.create_and_add_sankey()
-            elif args[0] == ObserverKeys.INFO_MESSAGE and isinstance(args[1], str):
-                # Show an info message
-                QMessageBox.information(self, 'Info', args[1])
-            elif args[0] == ObserverKeys.ERROR_MESSAGE and isinstance(args[1], str):
-                # Show an error message
-                QMessageBox.critical(self, 'Error', args[1])
-
         else:
             raise ValueError(f'Unknown observable: {observable}')
 
@@ -149,5 +143,8 @@ class MainWindow(QMainWindow, UiObservableBaseWindow):
 
     def open_config_window(self):
         """Open the configuration window."""
-        config_window = ConfigWindow(self.controller.config_service)
+        # TBD: Is this the right place to do this? Or should it be in the main.py file?
+        config_controller: ConfigController = ConfigController(self.controller.config_service)
+        config_window = ConfigWindow(config_controller)
+        config_controller.add_observer(config_window)
         config_window.exec()

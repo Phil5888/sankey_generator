@@ -12,6 +12,9 @@ class ObserverKeys:
     ERROR_MESSAGE = 'error_message'
     OBSERVER_KEYS_MESSAGE_BOX = {INFO_MESSAGE, ERROR_MESSAGE}
 
+    CLOSE_WINDOW = 'close_window'
+    OBSERVER_KEAYS_WINDOW = {CLOSE_WINDOW}
+
 
 class Observable:
     """Observable class to be used as a base class for any observable object."""
@@ -35,15 +38,16 @@ class Observable:
         if (
             args[0] not in ObserverKeys.OBSERVER_KEYS_MAIN_WINDOW
             and args[0] not in ObserverKeys.OBSERVER_KEYS_MESSAGE_BOX
+            and args[0] not in ObserverKeys.OBSERVER_KEAYS_WINDOW
         ):
             raise ValueError(f'Unknown observable: {args[0]}')
         for observer in self.observers:
-            observer.update(self, *args, **kwargs)
+            observer.updateObservable(self, *args, **kwargs)
 
 
 class Observer:
     """Observer class to be used as a base class for any observer object."""
 
-    def update(self, observable, *args, **kwargs):
+    def updateObservable(self, observable, *args, **kwargs):
         """Update method to be implemented by concrete observers."""
         pass

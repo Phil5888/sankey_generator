@@ -12,7 +12,7 @@ class UiObservableBaseWindow(Observer):
         super().__init__()
         self.controller = None
 
-    def update(self, observable, *args, **kwargs):
+    def updateObservable(self, observable, *args, **kwargs):
         """Update method for the observer pattern."""
         if self.controller is None:
             raise ValueError('Controller is not set. Please set the controller before calling update.')
